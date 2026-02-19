@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#002D62">
+  <meta name="description" content="Aprende sobre República Dominicana jugando. Provincias, historia, presidentes, leyes y más.">
+  <title>RD Quiz – Conoce Tu País</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Pantalla de Inicio -->
+    <section id="home-screen" class="screen active">
+      <header class="hero">
+        <div class="flag-decoration">
+          <div class="flag-stripe blue"></div>
+          <div class="flag-stripe white"></div>
+          <div class="flag-stripe red"></div>
+        </div>
+        <h1>🇩🇴 RD Quiz</h1>
+        <p class="subtitle">¿Cuánto conoces tu país?</p>
+      </header>
+      
+      <nav class="categories-grid">
+        <button class="category-card" data-mode="provincias">
+          <span class="category-icon">🗺️</span>
+          <span class="category-name">Provincias</span>
+          <span class="category-desc">Identifica las 32 provincias en el mapa</span>
+          <span class="progress-badge" id="progress-provincias">0%</span>
+        </button>
+        
+        <button class="category-card" data-mode="personajes">
+          <span class="category-icon">🦸</span>
+          <span class="category-name">Personajes Históricos</span>
+          <span class="category-desc">Héroes y figuras importantes</span>
+          <span class="progress-badge" id="progress-personajes">0%</span>
+        </button>
+        
+        <button class="category-card" data-mode="presidentes">
+          <span class="category-icon">🏛️</span>
+          <span class="category-name">Presidentes</span>
+          <span class="category-desc">Conoce a los mandatarios</span>
+          <span class="progress-badge" id="progress-presidentes">0%</span>
+        </button>
+        
+        <button class="category-card" data-mode="periodos">
+          <span class="category-icon">📅</span>
+          <span class="category-name">Períodos Presidenciales</span>
+          <span class="category-desc">¿Quién gobernó en ese año?</span>
+          <span class="progress-badge" id="progress-periodos">0%</span>
+        </button>
+        
+        <button class="category-card" data-mode="leyes">
+          <span class="category-icon">📜</span>
+          <span class="category-name">Constitución y Leyes</span>
+          <span class="category-desc">Artículos constitucionales</span>
+          <span class="progress-badge" id="progress-leyes">0%</span>
+        </button>
+        
+        <button class="category-card" data-mode="fechas">
+          <span class="category-icon">🗓️</span>
+          <span class="category-name">Fechas Históricas</span>
+          <span class="category-desc">Eventos importantes del país</span>
+          <span class="progress-badge" id="progress-fechas">0%</span>
+        </button>
+        
+        <button class="category-card" data-mode="regiones">
+          <span class="category-icon">📍</span>
+          <span class="category-name">Ubica la Provincia</span>
+          <span class="category-desc">¿A qué región pertenece?</span>
+          <span class="progress-badge" id="progress-regiones">0%</span>
+        </button>
+        
+        <button class="category-card" data-mode="superficie">
+          <span class="category-icon">📐</span>
+          <span class="category-name">Superficie Provincial</span>
+          <span class="category-desc">¿Cuánto mide cada provincia?</span>
+          <span class="progress-badge" id="progress-superficie">0%</span>
+        </button>
+        
+        <button class="category-card" data-mode="escudos">
+          <span class="category-icon">🛡️</span>
+          <span class="category-name">Escudos Provinciales</span>
+          <span class="category-desc">¿A qué provincia pertenece?</span>
+          <span class="progress-badge" id="progress-escudos">0%</span>
+        </button>
+      </nav>
+      
+      <div class="home-footer">
+        <button id="btn-stats" class="btn-secondary">
+          <span>📊</span> Mi Progreso
+        </button>
+        <button id="btn-random" class="btn-primary">
+          <span>🎲</span> Modo Aleatorio
+        </button>
+      </div>
+    </section>
+
+    <!-- Pantalla de Quiz -->
+    <section id="quiz-screen" class="screen">
+      <header class="quiz-header">
+        <button id="btn-back" class="btn-icon" aria-label="Volver">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="quiz-info">
+          <span id="quiz-category-name">Provincias</span>
+          <span id="quiz-progress">1 / 10</span>
+        </div>
+        <div class="quiz-score">
+          <span id="current-score">0</span>
+          <span class="score-label">pts</span>
+        </div>
+      </header>
+      
+      <div class="quiz-content">
+        <div id="question-container">
+          <!-- Contenedor del mapa para provincias -->
+          <div id="map-container" class="hidden">
+            <div id="rd-map"></div>
+          </div>
+          
+          <!-- Contenedor de imagen para personajes/presidentes -->
+          <div id="image-container" class="hidden">
+            <img id="question-image" src="" alt="Imagen de la pregunta">
+          </div>
+          
+          <!-- Texto de la pregunta -->
+          <div id="question-text-container">
+            <p id="question-text"></p>
+            <p id="question-hint" class="hint hidden"></p>
+          </div>
+        </div>
+        
+        <div id="options-container">
+          <!-- Las opciones se generan dinámicamente -->
+        </div>
+        
+        <div id="feedback-container" class="hidden">
+          <div id="feedback-icon"></div>
+          <p id="feedback-text"></p>
+          <p id="feedback-detail"></p>
+        </div>
+      </div>
+      
+      <footer class="quiz-footer">
+        <div class="timer-bar">
+          <div id="timer-fill"></div>
+        </div>
+        <button id="btn-next" class="btn-primary hidden">
+          Siguiente <span>→</span>
+        </button>
+      </footer>
+    </section>
+
+    <!-- Pantalla de Resultados -->
+    <section id="results-screen" class="screen">
+      <div class="results-content">
+        <div id="results-icon" class="results-icon">🏆</div>
+        <h2 id="results-title">¡Excelente!</h2>
+        <div class="results-score">
+          <span id="final-score">0</span>
+          <span class="score-max">/ 100</span>
+        </div>
+        <p id="results-message">Has demostrado gran conocimiento</p>
+        
+        <div class="results-stats">
+          <div class="stat-item">
+            <span class="stat-value" id="correct-count">0</span>
+            <span class="stat-label">Correctas</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="wrong-count">0</span>
+            <span class="stat-label">Incorrectas</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="time-bonus">0</span>
+            <span class="stat-label">Bonus Tiempo</span>
+          </div>
+        </div>
+        
+        <div class="streak-info" id="streak-info">
+          <span>🔥</span>
+          <span id="streak-count">0</span>
+          <span>días seguidos</span>
+        </div>
+      </div>
+      
+      <div class="results-actions">
+        <button id="btn-retry" class="btn-secondary">
+          <span>🔄</span> Reintentar
+        </button>
+        <button id="btn-home" class="btn-primary">
+          <span>🏠</span> Inicio
+        </button>
+      </div>
+    </section>
+
+    <!-- Pantalla de Estadísticas -->
+    <section id="stats-screen" class="screen">
+      <header class="stats-header">
+        <button id="btn-stats-back" class="btn-icon" aria-label="Volver">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h2>Mi Progreso</h2>
+        <div></div>
+      </header>
+      
+      <div class="stats-content">
+        <div class="stats-overview">
+          <div class="overview-card">
+            <span class="overview-value" id="total-played">0</span>
+            <span class="overview-label">Partidas Jugadas</span>
+          </div>
+          <div class="overview-card">
+            <span class="overview-value" id="total-correct">0</span>
+            <span class="overview-label">Respuestas Correctas</span>
+          </div>
+          <div class="overview-card">
+            <span class="overview-value" id="best-streak">0</span>
+            <span class="overview-label">Mejor Racha</span>
+          </div>
+        </div>
+        
+        <h3>Progreso por Categoría</h3>
+        <div class="category-stats" id="category-stats">
+          <!-- Se genera dinámicamente -->
+        </div>
+        
+        <h3>Logros</h3>
+        <div class="achievements" id="achievements">
+          <!-- Se genera dinámicamente -->
+        </div>
+        
+        <button id="btn-reset-stats" class="btn-danger">
+          <span>🗑️</span> Reiniciar Progreso
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal de confirmación -->
+  <div id="confirm-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="modal-title">¿Estás seguro?</h3>
+      <p id="modal-message">Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn-secondary">Cancelar</button>
+        <button id="modal-confirm" class="btn-danger">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de notificaciones -->
+  <div id="toast" class="toast hidden">
+    <span id="toast-icon"></span>
+    <span id="toast-message"></span>
+  </div>
+
+  <script src="js/definitions.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

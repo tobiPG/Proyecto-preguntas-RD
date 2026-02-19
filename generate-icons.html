@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Iconos - RD Quiz</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Segoe UI', sans-serif; 
+      background: #f0f2f5; 
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    h1 { color: #002D62; margin-bottom: 1rem; }
+    p { color: #666; margin-bottom: 2rem; }
+    .icons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+    .icon-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .icon-card canvas {
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+    .icon-card h3 { font-size: 0.9rem; color: #333; margin-bottom: 0.5rem; }
+    .icon-card button {
+      background: #002D62;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .icon-card button:hover { background: #003d82; }
+    .instructions {
+      background: #e7f3ff;
+      border-left: 4px solid #002D62;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 0 8px 8px 0;
+    }
+    .instructions ol { margin-left: 1.5rem; }
+    .instructions li { margin: 0.5rem 0; }
+  </style>
+</head>
+<body>
+  <h1>🇩🇴 Generador de Iconos - RD Quiz</h1>
+  <p>Genera los iconos PNG necesarios para la PWA</p>
+  
+  <div class="instructions">
+    <strong>Instrucciones:</strong>
+    <ol>
+      <li>Haz clic en "Descargar" en cada icono</li>
+      <li>Guarda los archivos en la carpeta <code>icons/</code></li>
+      <li>Asegúrate de que los nombres sean correctos (icon-72.png, icon-96.png, etc.)</li>
+    </ol>
+  </div>
+
+  <div class="icons-grid" id="icons-container"></div>
+
+  <script>
+    const sizes = [72, 96, 128, 144, 192, 256, 384, 512];
+    
+    function drawIcon(ctx, size) {
+      // Fondo con gradiente
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#002D62');
+      gradient.addColorStop(1, '#001a3a');
+      
+      // Fondo redondeado
+      const radius = size * 0.18;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, radius);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      
+      // Cruz de la bandera (sutil)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.fillRect(size * 0.43, size * 0.15, size * 0.14, size * 0.7);
+      ctx.fillRect(size * 0.15, size * 0.43, size * 0.7, size * 0.14);
+      
+      // Texto RD
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${size * 0.23}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('RD', size * 0.5, size * 0.38);
+      
+      // Texto Quiz
+      ctx.fillStyle = '#CE1126';
+      ctx.font = `bold ${size * 0.16}px Arial`;
+      ctx.fillText('Quiz', size * 0.5, size * 0.58);
+      
+      // Bandera pequeña
+      const flagWidth = size * 0.16;
+      const flagHeight = size * 0.1;
+      const flagX = size * 0.42;
+      const flagY = size * 0.72;
+      
+      // Cuadrantes de la bandera
+      ctx.fillStyle = '#002D62';
+      ctx.fillRect(flagX, flagY, flagWidth/2, flagHeight/2);
+      ctx.fillStyle = '#CE1126';
+      ctx.fillRect(flagX + flagWidth/2, flagY, flagWidth/2, flagHeight/2);
+      ctx.fillStyle = '#CE1126';
+      ctx.fillRect(flagX, flagY + flagHeight/2, flagWidth/2, flagHeight/2);
+      ctx.fillStyle = '#002D62';
+      ctx.fillRect(flagX + flagWidth/2, flagY + flagHeight/2, flagWidth/2, flagHeight/2);
+      
+      // Cruz blanca
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(flagX + flagWidth * 0.44, flagY, flagWidth * 0.12, flagHeight);
+      ctx.fillRect(flagX, flagY + flagHeight * 0.4, flagWidth, flagHeight * 0.2);
+      
+      // Signos de interrogación decorativos
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.font = `${size * 0.12}px Arial`;
+      ctx.fillText('?', size * 0.22, size * 0.78);
+      ctx.font = `${size * 0.1}px Arial`;
+      ctx.fillText('?', size * 0.75, size * 0.28);
+    }
+    
+    function createIconCard(size) {
+      const card = document.createElement('div');
+      card.className = 'icon-card';
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      canvas.style.width = Math.min(size, 128) + 'px';
+      canvas.style.height = Math.min(size, 128) + 'px';
+      
+      const ctx = canvas.getContext('2d');
+      drawIcon(ctx, size);
+      
+      const title = document.createElement('h3');
+      title.textContent = `icon-${size}.png`;
+      
+      const button = document.createElement('button');
+      button.textContent = 'Descargar';
+      button.onclick = () => {
+        const link = document.createElement('a');
+        link.download = `icon-${size}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      };
+      
+      card.appendChild(canvas);
+      card.appendChild(title);
+      card.appendChild(button);
+      
+      return card;
+    }
+    
+    const container = document.getElementById('icons-container');
+    sizes.forEach(size => {
+      container.appendChild(createIconCard(size));
+    });
+  </script>
+</body>
+</html>
