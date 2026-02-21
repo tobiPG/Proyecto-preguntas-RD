@@ -30,12 +30,30 @@ class StorageManager {
         presidentes: { played: 0, correct: 0, mastered: [] },
         periodos: { played: 0, correct: 0, mastered: [] },
         leyes: { played: 0, correct: 0, mastered: [] },
-        fechas: { played: 0, correct: 0, mastered: [] }
+        fechas: { played: 0, correct: 0, mastered: [] },
+        regiones: { played: 0, correct: 0, mastered: [] },
+        superficie: { played: 0, correct: 0, mastered: [] },
+        escudos: { played: 0, correct: 0, mastered: [] },
+        municipios: { played: 0, correct: 0, mastered: [] },
+        fundaciones: { played: 0, correct: 0, mastered: [] },
+        escudosMunicipios: { played: 0, correct: 0, mastered: [] }
       },
       // Racha diaria
       dailyStreak: {
         count: 0,
         lastPlayedDate: null
+      },
+      // Sistema de vidas
+      lives: {
+        current: 5,
+        max: 5,
+        lastRefillDate: null
+      },
+      // Inmunidad (5 min sin perder vidas, una vez al día)
+      immunity: {
+        activeUntil: null,
+        lastUsedDate: null,
+        durationMinutes: 5
       },
       // Logros desbloqueados
       achievements: [],
@@ -43,8 +61,17 @@ class StorageManager {
       settings: {
         soundEnabled: true,
         vibrationEnabled: true,
-        timerEnabled: true
+        timerEnabled: true,
+        darkMode: false
       },
+      // Suscripción Premium
+      premium: {
+        isActive: false,
+        expiresAt: null,
+        purchaseDate: null
+      },
+      // Monedas del juego (para comprar vidas)
+      coins: 0,
       // Fecha de primer uso
       firstUsed: new Date().toISOString()
     };
@@ -84,6 +111,10 @@ class StorageManager {
         )
       },
       dailyStreak: { ...defaults.dailyStreak, ...saved.dailyStreak },
+      lives: { ...defaults.lives, ...(saved.lives || {}) },
+      immunity: { ...defaults.immunity, ...(saved.immunity || {}) },
+      premium: { ...defaults.premium, ...(saved.premium || {}) },
+      coins: saved.coins || defaults.coins,
       achievements: saved.achievements || [],
       settings: { ...defaults.settings, ...saved.settings },
       firstUsed: saved.firstUsed || defaults.firstUsed
@@ -254,6 +285,230 @@ class StorageManager {
   updateSettings(settings) {
     this.data.settings = { ...this.data.settings, ...settings };
     this.save();
+  }
+
+  // ===== SISTEMA DE VIDAS =====
+
+  /**
+   * Obtiene las vidas actuales
+   */
+  getLives() {
+    // Verificar si es un nuevo día para restaurar vidas
+    const today = new Date().toDateString();
+    if (this.data.lives.lastRefillDate !== today) {
+      this.data.lives.current = this.data.lives.max;
+      this.data.lives.lastRefillDate = today;
+      this.save();
+    }
+    return this.data.lives.current;
+  }
+
+  /**
+   * Restaura todas las vidas (para testing o compras)
+   */
+  refillLives() {
+    this.data.lives.current = this.data.lives.max;
+    this.save();
+  }
+
+  // ===== SISTEMA DE INMUNIDAD =====
+
+  /**
+   * Verifica si la inmunidad está activa
+   */
+  isImmunityActive() {
+    if (!this.data.immunity.activeUntil) return false;
+    return new Date() < new Date(this.data.immunity.activeUntil);
+  }
+
+  /**
+   * Obtiene tiempo restante de inmunidad en minutos
+   */
+  getImmunityTimeLeft() {
+    if (!this.isImmunityActive()) return 0;
+    const remaining = new Date(this.data.immunity.activeUntil) - new Date();
+    return Math.max(0, Math.ceil(remaining / 60000));
+  }
+
+  /**
+   * Verifica si puede activar inmunidad hoy
+   */
+  canActivateImmunity() {
+    const today = new Date().toDateString();
+    return this.data.immunity.lastUsedDate !== today;
+  }
+
+  /**
+   * Activa la inmunidad de 5 minutos
+   * @returns {boolean} true si se activó con éxito
+   */
+  activateImmunity() {
+    if (!this.canActivateImmunity()) {
+      return false;
+    }
+
+    const now = new Date();
+    const endTime = new Date(now.getTime() + this.data.immunity.durationMinutes * 60000);
+    
+    this.data.immunity.activeUntil = endTime.toISOString();
+    this.data.immunity.lastUsedDate = now.toDateString();
+    this.save();
+    return true;
+  }
+
+  /**
+   * Obtiene estado completo de vidas e inmunidad
+   */
+  getLifeStatus() {
+    return {
+      lives: this.getLives(),
+      maxLives: this.data.lives.max,
+      immunityActive: this.isImmunityActive(),
+      immunityTimeLeft: this.getImmunityTimeLeft(),
+      canActivateImmunity: this.canActivateImmunity()
+    };
+  }
+
+  // ===== SISTEMA PREMIUM =====
+
+  /**
+   * Verifica si el usuario tiene suscripción premium activa
+   */
+  isPremium() {
+    if (!this.data.premium.isActive) return false;
+    
+    // Verificar si no ha expirado
+    if (this.data.premium.expiresAt) {
+      const expiryDate = new Date(this.data.premium.expiresAt);
+      if (expiryDate < new Date()) {
+        // Expiró, desactivar
+        this.data.premium.isActive = false;
+        this.save();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Activa la suscripción premium (simulado - en producción conectar con tienda)
+   * @param {number} months - Meses de suscripción
+   */
+  activatePremium(months = 1) {
+    const now = new Date();
+    const expiryDate = new Date(now);
+    expiryDate.setMonth(expiryDate.getMonth() + months);
+    
+    this.data.premium = {
+      isActive: true,
+      expiresAt: expiryDate.toISOString(),
+      purchaseDate: now.toISOString()
+    };
+    this.save();
+    return true;
+  }
+
+  /**
+   * Cancela/desactiva premium
+   */
+  cancelPremium() {
+    this.data.premium.isActive = false;
+    this.save();
+  }
+
+  /**
+   * Obtiene días restantes de premium
+   */
+  getPremiumDaysLeft() {
+    if (!this.isPremium()) return 0;
+    const expiry = new Date(this.data.premium.expiresAt);
+    const now = new Date();
+    const diffTime = expiry - now;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  // ===== SISTEMA DE MONEDAS =====
+
+  /**
+   * Obtiene las monedas actuales
+   */
+  getCoins() {
+    return this.data.coins || 0;
+  }
+
+  /**
+   * Añade monedas
+   */
+  addCoins(amount) {
+    this.data.coins = (this.data.coins || 0) + amount;
+    this.save();
+    return this.data.coins;
+  }
+
+  /**
+   * Gasta monedas si tiene suficientes
+   * @returns {boolean} true si pudo gastar
+   */
+  spendCoins(amount) {
+    if (this.data.coins >= amount) {
+      this.data.coins -= amount;
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  // ===== TIENDA =====
+
+  /**
+   * Compra vidas con monedas
+   * @param {number} quantity - Cantidad de vidas
+   * @param {number} cost - Costo en monedas
+   */
+  buyLivesWithCoins(quantity, cost) {
+    if (this.spendCoins(cost)) {
+      this.data.lives.current = Math.min(
+        this.data.lives.current + quantity,
+        this.data.lives.max
+      );
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Verifica si tiene vidas infinitas (premium activo)
+   */
+  hasInfiniteLives() {
+    return this.isPremium();
+  }
+
+  /**
+   * Override de hasLives para considerar premium
+   */
+  hasLives() {
+    if (this.isPremium()) return true;
+    return this.getLives() > 0;
+  }
+
+  /**
+   * Override de loseLife para considerar premium
+   */
+  loseLife() {
+    // Premium no pierde vidas
+    if (this.isPremium()) return this.data.lives.current;
+    
+    // Si tiene inmunidad activa, no pierde vida
+    if (this.isImmunityActive()) {
+      return this.data.lives.current;
+    }
+    
+    if (this.data.lives.current > 0) {
+      this.data.lives.current--;
+      this.save();
+    }
+    return this.data.lives.current;
   }
 }
 

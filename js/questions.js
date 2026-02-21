@@ -561,6 +561,299 @@ class QuestionGenerator {
   }
 
   /**
+   * Genera preguntas de municipios y provincias
+   * ¿A qué provincia pertenece este municipio?
+   */
+  generateMunicipiosQuestions(count = 10) {
+    const questions = [];
+    const municipios = this.shuffle([...RD_DATA.municipios]);
+    const allProvincias = [...new Set(RD_DATA.municipios.map(m => m.provincia))];
+
+    const questionTypes = [
+      // Tipo 1: ¿A qué provincia pertenece este municipio?
+      (m) => ({
+        question: `¿A qué provincia pertenece el municipio de ${m.nombre}?`,
+        hint: m.nombreCompleto ? `Nombre completo: ${m.nombreCompleto}` : 
+              m.nombreAntiguo ? `Antes conocido como: ${m.nombreAntiguo}` : 
+              `Creado en ${m.año}`,
+        correctAnswer: m.provincia,
+        options: this.shuffle([m.provincia, ...this.getRandomOptions(m.provincia, allProvincias, 3)]),
+        detail: `${m.nombre} pertenece a la provincia ${m.provincia}`
+      }),
+      // Tipo 2: ¿Cuál de estos municipios pertenece a la provincia X?
+      (m) => {
+        const otrosMunicipios = RD_DATA.municipios
+          .filter(x => x.provincia !== m.provincia)
+          .map(x => x.nombre);
+        return {
+          question: `¿Cuál de estos municipios pertenece a la provincia de ${m.provincia}?`,
+          hint: `Busca el municipio correcto`,
+          correctAnswer: m.nombre,
+          options: this.shuffle([m.nombre, ...this.getRandomOptions(m.nombre, otrosMunicipios, 3)]),
+          detail: `${m.nombre} pertenece a ${m.provincia}`
+        };
+      },
+      // Tipo 3: Si tiene nombre antiguo/completo
+      (m) => {
+        const nombreAlterno = m.nombreCompleto || m.nombreAntiguo;
+        if (nombreAlterno) {
+          return {
+            question: `${nombreAlterno} es el nombre ${m.nombreCompleto ? 'completo' : 'antiguo'} de un municipio en:`,
+            hint: `Actualmente se conoce como ${m.nombre}`,
+            correctAnswer: m.provincia,
+            options: this.shuffle([m.provincia, ...this.getRandomOptions(m.provincia, allProvincias, 3)]),
+            detail: `${m.nombre} (${nombreAlterno}) está en ${m.provincia}`
+          };
+        }
+        // Fallback al tipo 1
+        return {
+          question: `¿A qué provincia pertenece el municipio de ${m.nombre}?`,
+          hint: `Creado el ${m.creacion}`,
+          correctAnswer: m.provincia,
+          options: this.shuffle([m.provincia, ...this.getRandomOptions(m.provincia, allProvincias, 3)]),
+          detail: `${m.nombre} pertenece a la provincia ${m.provincia}`
+        };
+      }
+    ];
+
+    for (let i = 0; i < Math.min(count, municipios.length); i++) {
+      const municipio = municipios[i];
+      const typeIndex = i % questionTypes.length;
+      const template = questionTypes[typeIndex](municipio);
+
+      questions.push({
+        type: 'municipios',
+        ...template
+      });
+    }
+
+    return questions;
+  }
+
+  /**
+   * Genera preguntas sobre fundación de municipios
+   * ¿Cuándo se creó/fundó este municipio?
+   */
+  generateFundacionesQuestions(count = 10) {
+    const questions = [];
+    const municipios = this.shuffle([...RD_DATA.municipios]);
+    const allAños = [...new Set(RD_DATA.municipios.map(m => m.año))].sort((a, b) => a - b);
+
+    const questionTypes = [
+      // Tipo 1: ¿En qué año fue creado el municipio X?
+      (m) => ({
+        question: `¿En qué año fue elevado a municipio ${m.nombre}?`,
+        hint: `Provincia: ${m.provincia}`,
+        correctAnswer: m.año.toString(),
+        options: this.shuffle([
+          m.año.toString(),
+          (m.año - 10 + Math.floor(Math.random() * 5)).toString(),
+          (m.año + 5 + Math.floor(Math.random() * 10)).toString(),
+          (m.año - 20 + Math.floor(Math.random() * 5)).toString()
+        ]),
+        detail: `${m.nombre} fue creado el ${m.creacion}`
+      }),
+      // Tipo 2: ¿Cuál de estos municipios fue creado en el año X?
+      (m) => {
+        const otrosMunicipios = RD_DATA.municipios
+          .filter(x => x.año !== m.año)
+          .map(x => x.nombre);
+        return {
+          question: `¿Cuál de estos municipios fue creado en ${m.año}?`,
+          hint: `Fecha exacta: ${m.creacion}`,
+          correctAnswer: m.nombre,
+          options: this.shuffle([m.nombre, ...this.getRandomOptions(m.nombre, otrosMunicipios, 3)]),
+          detail: `${m.nombre} fue creado el ${m.creacion}`
+        };
+      },
+      // Tipo 3: ¿Cuál es la fecha de creación de X?
+      (m) => ({
+        question: `¿Cuál es la fecha de creación del municipio ${m.nombre}?`,
+        hint: `Provincia: ${m.provincia}`,
+        correctAnswer: m.creacion,
+        options: this.shuffle([
+          m.creacion,
+          ...this.generateFakeDates(m.creacion, 3)
+        ]),
+        detail: `${m.nombre} (${m.provincia}) fue creado el ${m.creacion}`
+      }),
+      // Tipo 4: ¿Cuál municipio es más antiguo/reciente?
+      (m, idx, arr) => {
+        const otroMunicipio = arr[(idx + 1) % arr.length];
+        const esMasAntiguo = m.año < otroMunicipio.año;
+        return {
+          question: `¿Cuál de estos dos municipios fue creado primero?`,
+          hint: `Compara: ${m.nombre} vs ${otroMunicipio.nombre}`,
+          correctAnswer: esMasAntiguo ? m.nombre : otroMunicipio.nombre,
+          options: this.shuffle([m.nombre, otroMunicipio.nombre]),
+          detail: `${esMasAntiguo ? m.nombre : otroMunicipio.nombre} (${esMasAntiguo ? m.año : otroMunicipio.año}) es más antiguo que ${esMasAntiguo ? otroMunicipio.nombre : m.nombre} (${esMasAntiguo ? otroMunicipio.año : m.año})`
+        };
+      },
+      // Tipo 5: Identificar municipios de 1845
+      (m) => {
+        if (m.año === 1845) {
+          const municipiosNuevos = RD_DATA.municipios
+            .filter(x => x.año > 2000)
+            .map(x => x.nombre);
+          return {
+            question: `¿Cuál de estos municipios fue fundado con la República en 1845?`,
+            hint: `Los municipios originales datan del 5 de marzo de 1845`,
+            correctAnswer: m.nombre,
+            options: this.shuffle([m.nombre, ...this.getRandomOptions(m.nombre, municipiosNuevos, 3)]),
+            detail: `${m.nombre} es uno de los municipios fundadores (${m.creacion})`
+          };
+        }
+        // Fallback
+        return {
+          question: `¿En qué año fue elevado a municipio ${m.nombre}?`,
+          hint: `Provincia: ${m.provincia}`,
+          correctAnswer: m.año.toString(),
+          options: this.shuffle([
+            m.año.toString(),
+            '1845',
+            (m.año + 15).toString(),
+            (m.año - 25 > 1845 ? m.año - 25 : 1900).toString()
+          ]),
+          detail: `${m.nombre} fue creado el ${m.creacion}`
+        };
+      },
+      // Tipo 6: Municipios más recientes
+      (m) => {
+        if (m.año >= 2020) {
+          return {
+            question: `${m.nombre} es uno de los municipios más recientes. ¿En qué año fue creado?`,
+            hint: m.dato || `Provincia: ${m.provincia}`,
+            correctAnswer: m.año.toString(),
+            options: this.shuffle(['2020', '2022', '2024', '2016']),
+            detail: `${m.nombre} fue elevado a municipio en ${m.año}`
+          };
+        }
+        return {
+          question: `¿En qué año fue creado el municipio de ${m.nombre}?`,
+          hint: `Provincia: ${m.provincia}`,
+          correctAnswer: m.año.toString(),
+          options: this.shuffle([
+            m.año.toString(),
+            (m.año - 8).toString(),
+            (m.año + 12).toString(),
+            (m.año - 15 > 1845 ? m.año - 15 : 1860).toString()
+          ]),
+          detail: `${m.nombre} fue creado el ${m.creacion}`
+        };
+      }
+    ];
+
+    for (let i = 0; i < Math.min(count, municipios.length); i++) {
+      const municipio = municipios[i];
+      const typeIndex = i % questionTypes.length;
+      const template = questionTypes[typeIndex](municipio, i, municipios);
+
+      questions.push({
+        type: 'fundaciones',
+        ...template
+      });
+    }
+
+    return questions;
+  }
+
+  /**
+   * Genera preguntas de escudos de municipios
+   * ¿A qué municipio pertenece este escudo?
+   */
+  generateEscudosMunicipiosQuestions(count = 10) {
+    const questions = [];
+    const escudosMap = RD_DATA.escudosMunicipios;
+    
+    // Solo municipios que tienen escudo disponible
+    const municipiosConEscudo = RD_DATA.municipios.filter(m => escudosMap[m.nombre]);
+    const shuffled = this.shuffle([...municipiosConEscudo]);
+    const allNames = municipiosConEscudo.map(m => m.nombre);
+
+    const questionTypes = [
+      // Tipo 1: ¿A qué municipio pertenece este escudo?
+      (m) => ({
+        question: '¿A qué municipio pertenece este escudo?',
+        hint: `Provincia: ${m.provincia}`,
+        correctAnswer: m.nombre,
+        options: this.shuffle([m.nombre, ...this.getRandomOptions(m.nombre, allNames, 3)]),
+        detail: `Escudo de ${m.nombre} (${m.provincia})`
+      }),
+      // Tipo 2: Con pista del nombre antiguo/completo
+      (m) => {
+        const nombreAlterno = m.nombreCompleto || m.nombreAntiguo;
+        return {
+          question: '¿A qué municipio pertenece este escudo?',
+          hint: nombreAlterno ? `También conocido como: ${nombreAlterno}` : `Creado en ${m.año}`,
+          correctAnswer: m.nombre,
+          options: this.shuffle([m.nombre, ...this.getRandomOptions(m.nombre, allNames, 3)]),
+          detail: `${m.nombre} - ${m.provincia}`
+        };
+      },
+      // Tipo 3: Escudo de municipios de una provincia específica
+      (m) => {
+        const otrosMunicipios = municipiosConEscudo
+          .filter(x => x.provincia !== m.provincia)
+          .map(x => x.nombre);
+        return {
+          question: `Este escudo pertenece a un municipio de ${m.provincia}. ¿Cuál es?`,
+          hint: `Fundado en ${m.año}`,
+          correctAnswer: m.nombre,
+          options: this.shuffle([m.nombre, ...this.getRandomOptions(m.nombre, otrosMunicipios, 3)]),
+          detail: `${m.nombre} está en la provincia ${m.provincia}`
+        };
+      }
+    ];
+
+    for (let i = 0; i < Math.min(count, shuffled.length); i++) {
+      const municipio = shuffled[i];
+      const typeIndex = i % questionTypes.length;
+      const template = questionTypes[typeIndex](municipio);
+
+      questions.push({
+        type: 'escudosMunicipios',
+        image: `img/escudos-municipios/${encodeURIComponent(escudosMap[municipio.nombre])}`,
+        ...template
+      });
+    }
+
+    return questions;
+  }
+
+  /**
+   * Genera fechas falsas similares a una fecha real
+   */
+  generateFakeDates(realDate, count) {
+    const fakeDates = [];
+    const parts = realDate.match(/(\d+)\s+de\s+(\w+)\s+de\s+(\d+)/);
+    
+    if (!parts) {
+      // Si es solo un año
+      const year = parseInt(realDate);
+      return [
+        (year - 5).toString(),
+        (year + 8).toString(),
+        (year - 12).toString()
+      ].slice(0, count);
+    }
+
+    const [, day, month, year] = parts;
+    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 
+                    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    
+    for (let i = 0; i < count; i++) {
+      const fakeDay = Math.max(1, Math.min(28, parseInt(day) + (Math.random() > 0.5 ? 1 : -1) * (5 + Math.floor(Math.random() * 10))));
+      const monthIdx = months.indexOf(month.toLowerCase());
+      const fakeMonthIdx = (monthIdx + 2 + Math.floor(Math.random() * 4)) % 12;
+      const fakeYear = parseInt(year) + (Math.random() > 0.5 ? 1 : -1) * (3 + Math.floor(Math.random() * 15));
+      
+      fakeDates.push(`${String(fakeDay).padStart(2, '0')} de ${months[fakeMonthIdx]} de ${Math.max(1845, fakeYear)}`);
+    }
+    
+    return fakeDates;
+  }
+
+  /**
    * Genera preguntas aleatorias de todas las categorías
    */
   generateRandomQuestions(count = 10) {
@@ -573,7 +866,10 @@ class QuestionGenerator {
       () => this.generateFechasQuestions(2),
       () => this.generateRegionesQuestions(2),
       () => this.generateSuperficieQuestions(2),
-      () => this.generateEscudosQuestions(2)
+      () => this.generateEscudosQuestions(2),
+      () => this.generateMunicipiosQuestions(2),
+      () => this.generateFundacionesQuestions(2),
+      () => this.generateEscudosMunicipiosQuestions(2)
     ];
 
     let allQuestions = [];
@@ -609,6 +905,12 @@ class QuestionGenerator {
         return this.generateSuperficieQuestions(count);
       case 'escudos':
         return this.generateEscudosQuestions(count);
+      case 'municipios':
+        return this.generateMunicipiosQuestions(count);
+      case 'fundaciones':
+        return this.generateFundacionesQuestions(count);
+      case 'escudosMunicipios':
+        return this.generateEscudosMunicipiosQuestions(count);
       case 'random':
         return this.generateRandomQuestions(count);
       default:
