@@ -49,11 +49,11 @@ class StorageManager {
         max: 5,
         lastRefillDate: null
       },
-      // Inmunidad (5 min sin perder vidas, una vez al día)
+      // Inmunidad (30 min sin perder vidas, una vez al día)
       immunity: {
         activeUntil: null,
         lastUsedDate: null,
-        durationMinutes: 5
+        durationMinutes: 30
       },
       // Logros desbloqueados
       achievements: [],
@@ -327,7 +327,7 @@ class StorageManager {
   getImmunityTimeLeft() {
     if (!this.isImmunityActive()) return 0;
     const remaining = new Date(this.data.immunity.activeUntil) - new Date();
-    return Math.max(0, Math.ceil(remaining / 60000));
+    return Math.max(0, remaining);
   }
 
   /**
@@ -466,6 +466,9 @@ class StorageManager {
    * @param {number} cost - Costo en monedas
    */
   buyLivesWithCoins(quantity, cost) {
+    if (this.data.lives.current >= this.data.lives.max) {
+      return 'max';
+    }
     if (this.spendCoins(cost)) {
       this.data.lives.current = Math.min(
         this.data.lives.current + quantity,

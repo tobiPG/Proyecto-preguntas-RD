@@ -1186,14 +1186,19 @@ class RDQuizApp {
    * Compra vidas con monedas
    */
   buyLives(quantity, cost) {
+    if (storage.getLives() >= this.MAX_LIVES) {
+      this.showToast('¡Ya tienes las vidas al máximo!', '❤️');
+      return;
+    }
+
     const currentCoins = storage.getCoins();
-    
     if (currentCoins < cost) {
       this.showToast(`Necesitas ${cost} monedas. Tienes ${currentCoins}`, '🪙');
       return;
     }
-    
-    if (storage.buyLivesWithCoins(quantity, cost)) {
+
+    const result = storage.buyLivesWithCoins(quantity, cost);
+    if (result === true) {
       this.showToast(`¡Compraste ${quantity} vida${quantity > 1 ? 's' : ''}!`, '❤️');
       document.getElementById('store-coins').textContent = storage.getCoins();
       this.updateLivesDisplay();
