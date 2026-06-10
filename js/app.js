@@ -318,11 +318,11 @@ class RDQuizApp {
     this.quizElements.btnNext.classList.add('hidden');
     this.quizElements.questionHint.classList.add('hidden');
 
-    // Mostrar imagen si tiene imagen (provincias, superficie)
+    // Mostrar imagen si tiene imagen (provincias, superficie, escudos, fundaciones)
     if (question.image) {
       this.quizElements.imageContainer.classList.remove('hidden');
       this.quizElements.questionImage.src = question.image;
-      this.quizElements.questionImage.alt = 'Provincia destacada en el mapa';
+      this.quizElements.questionImage.alt = question.question;
     }
 
     // Mostrar pregunta

@@ -639,6 +639,12 @@ class QuestionGenerator {
     const municipios = this.shuffle([...RD_DATA.municipios]);
     const allAños = [...new Set(RD_DATA.municipios.map(m => m.año))].sort((a, b) => a - b);
 
+    // Escudo del municipio (mismo que se usa en el modo Escudos de Municipios)
+    const getMunicipioEscudo = (nombre) => {
+      const file = RD_DATA.escudosMunicipios[nombre];
+      return file ? `img/escudos-municipios/${encodeURIComponent(file)}` : null;
+    };
+
     const questionTypes = [
       // Tipo 1: ¿En qué año fue creado el municipio X?
       (m) => ({
@@ -651,6 +657,7 @@ class QuestionGenerator {
           (m.año + 5 + Math.floor(Math.random() * 10)).toString(),
           (m.año - 20 + Math.floor(Math.random() * 5)).toString()
         ]),
+        image: getMunicipioEscudo(m.nombre),
         detail: `${m.nombre} fue creado el ${m.creacion}`
       }),
       // Tipo 2: ¿Cuál de estos municipios fue creado en el año X?
@@ -675,6 +682,7 @@ class QuestionGenerator {
           m.creacion,
           ...this.generateFakeDates(m.creacion, 3)
         ]),
+        image: getMunicipioEscudo(m.nombre),
         detail: `${m.nombre} (${m.provincia}) fue creado el ${m.creacion}`
       }),
       // Tipo 4: ¿Cuál municipio es más antiguo/reciente?
@@ -686,6 +694,7 @@ class QuestionGenerator {
           hint: `Compara: ${m.nombre} vs ${otroMunicipio.nombre}`,
           correctAnswer: esMasAntiguo ? m.nombre : otroMunicipio.nombre,
           options: this.shuffle([m.nombre, otroMunicipio.nombre]),
+          image: getMunicipioEscudo(m.nombre),
           detail: `${esMasAntiguo ? m.nombre : otroMunicipio.nombre} (${esMasAntiguo ? m.año : otroMunicipio.año}) es más antiguo que ${esMasAntiguo ? otroMunicipio.nombre : m.nombre} (${esMasAntiguo ? otroMunicipio.año : m.año})`
         };
       },
@@ -714,6 +723,7 @@ class QuestionGenerator {
             (m.año + 15).toString(),
             (m.año - 25 > 1845 ? m.año - 25 : 1900).toString()
           ]),
+          image: getMunicipioEscudo(m.nombre),
           detail: `${m.nombre} fue creado el ${m.creacion}`
         };
       },
@@ -725,6 +735,7 @@ class QuestionGenerator {
             hint: m.dato || `Provincia: ${m.provincia}`,
             correctAnswer: m.año.toString(),
             options: this.shuffle(['2020', '2022', '2024', '2016']),
+            image: getMunicipioEscudo(m.nombre),
             detail: `${m.nombre} fue elevado a municipio en ${m.año}`
           };
         }
@@ -738,6 +749,7 @@ class QuestionGenerator {
             (m.año + 12).toString(),
             (m.año - 15 > 1845 ? m.año - 15 : 1860).toString()
           ]),
+          image: getMunicipioEscudo(m.nombre),
           detail: `${m.nombre} fue creado el ${m.creacion}`
         };
       }
