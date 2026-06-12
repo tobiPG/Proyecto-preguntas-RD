@@ -818,7 +818,7 @@ class QuestionGenerator {
           hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
           correctAnswer: mayor.nombre,
           options: this.shuffle([p.nombre, otra.nombre]),
-          image: `img/provincias/${p.id}.png`,
+          image: 'img/mapa-rd.svg',
           detail: `${mayor.nombre} (${mayor.superficie.toLocaleString('es-DO')} km²) es más grande que ${menor.nombre} (${menor.superficie.toLocaleString('es-DO')} km²)`
         };
       },
@@ -847,7 +847,7 @@ class QuestionGenerator {
           hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
           correctAnswer: menor.nombre,
           options: this.shuffle([p.nombre, otra.nombre]),
-          image: `img/provincias/${p.id}.png`,
+          image: 'img/mapa-rd.svg',
           detail: `${menor.nombre} (${menor.superficie.toLocaleString('es-DO')} km²) es más pequeña que ${mayor.nombre} (${mayor.superficie.toLocaleString('es-DO')} km²)`
         };
       },

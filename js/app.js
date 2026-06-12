@@ -439,27 +439,33 @@ class RDQuizApp {
     this.quizElements.feedbackContainer.classList.remove('hidden', 'correct', 'wrong');
     this.quizElements.feedbackContainer.classList.add(isCorrect ? 'correct' : 'wrong');
 
+    const parts = [];
+
     if (isCorrect) {
       sounds.playCorrect();
       this.quizElements.feedbackIcon.textContent = '✅';
       this.quizElements.feedbackText.textContent = '¡Correcto!';
-
-      let detail = '';
       if (this.streak > 1) {
-        detail = `🔥 Racha de ${this.streak}`;
+        parts.push(`🔥 Racha de ${this.streak}`);
       }
-      this.quizElements.feedbackDetail.textContent = detail || question.detail || '';
     } else {
       sounds.playWrong();
       this.quizElements.feedbackIcon.textContent = '❌';
       this.quizElements.feedbackText.textContent = 'Incorrecto';
+      parts.push(`Respuesta: ${question.correctAnswer}`);
       if (hasImmunity) {
-        this.quizElements.feedbackDetail.textContent = `🛡️ ¡Inmunidad activa! No perdiste vida. Respuesta: ${question.correctAnswer}`;
+        parts.push('🛡️ ¡Inmunidad activa! No perdiste vida.');
       } else {
         const livesLeft = storage.getLives();
-        this.quizElements.feedbackDetail.textContent = `❤️ -1 vida (${livesLeft} restantes). Respuesta: ${question.correctAnswer}`;
+        parts.push(`❤️ -1 vida (${livesLeft} restantes)`);
       }
     }
+
+    if (question.detail) {
+      parts.push(question.detail);
+    }
+
+    this.quizElements.feedbackDetail.textContent = parts.join(' · ');
   }
 
   /**
@@ -533,13 +539,18 @@ class RDQuizApp {
       this.quizElements.feedbackContainer.classList.add('wrong');
       this.quizElements.feedbackIcon.textContent = '⏱️';
       this.quizElements.feedbackText.textContent = '¡Tiempo agotado!';
-      
+
+      const timeUpParts = [`Respuesta: ${question.correctAnswer}`];
       if (hasImmunity) {
-        this.quizElements.feedbackDetail.textContent = `🛡️ ¡Inmunidad activa! No perdiste vida. Respuesta: ${question.correctAnswer}`;
+        timeUpParts.push('🛡️ ¡Inmunidad activa! No perdiste vida.');
       } else {
         const livesLeft = storage.getLives();
-        this.quizElements.feedbackDetail.textContent = `❤️ -1 vida (${livesLeft} restantes). Respuesta: ${question.correctAnswer}`;
+        timeUpParts.push(`❤️ -1 vida (${livesLeft} restantes)`);
       }
+      if (question.detail) {
+        timeUpParts.push(question.detail);
+      }
+      this.quizElements.feedbackDetail.textContent = timeUpParts.join(' · ');
 
       // Mostrar botón siguiente o game over
       if (storage.hasLives()) {
