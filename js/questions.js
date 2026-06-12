@@ -23,6 +23,10 @@ class QuestionGenerator {
       'Higuamo',
       'Ozama'
     ];
+
+    // Mapa general de RD con los nombres de las provincias, usado en preguntas
+    // de comparación donde no aplica mostrar una sola provincia
+    this.MAPA_GENERAL = 'img/mapa-rd-nombres.jpg';
   }
 
   /**
@@ -117,8 +121,6 @@ class QuestionGenerator {
       return `img/escudos/${id}.${ext}`;
     };
 
-    const MAPA_GENERAL = 'img/mapa-rd.svg';
-
     const questionTypes = [
       // Tipo 1: ¿Cuál es la capital de esta provincia?
       (p) => ({
@@ -148,7 +150,7 @@ class QuestionGenerator {
           hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
           correctAnswer: mayor.nombre,
           options: this.shuffle([p.nombre, otra.nombre]),
-          image: MAPA_GENERAL,
+          image: this.MAPA_GENERAL,
           detail: `${mayor.nombre} (${mayor.poblacion.toLocaleString('es-DO')} hab.) tiene más población que ${menor.nombre} (${menor.poblacion.toLocaleString('es-DO')} hab.)`
         };
       },
@@ -162,7 +164,7 @@ class QuestionGenerator {
           hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
           correctAnswer: mayor.nombre,
           options: this.shuffle([p.nombre, otra.nombre]),
-          image: MAPA_GENERAL,
+          image: this.MAPA_GENERAL,
           detail: `${mayor.nombre} (${mayor.superficie.toLocaleString('es-DO')} km²) tiene mayor superficie que ${menor.nombre} (${menor.superficie.toLocaleString('es-DO')} km²)`
         };
       }
@@ -818,7 +820,7 @@ class QuestionGenerator {
           hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
           correctAnswer: mayor.nombre,
           options: this.shuffle([p.nombre, otra.nombre]),
-          image: 'img/mapa-rd.svg',
+          image: this.MAPA_GENERAL,
           detail: `${mayor.nombre} (${mayor.superficie.toLocaleString('es-DO')} km²) es más grande que ${menor.nombre} (${menor.superficie.toLocaleString('es-DO')} km²)`
         };
       },
@@ -847,7 +849,7 @@ class QuestionGenerator {
           hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
           correctAnswer: menor.nombre,
           options: this.shuffle([p.nombre, otra.nombre]),
-          image: 'img/mapa-rd.svg',
+          image: this.MAPA_GENERAL,
           detail: `${menor.nombre} (${menor.superficie.toLocaleString('es-DO')} km²) es más pequeña que ${mayor.nombre} (${mayor.superficie.toLocaleString('es-DO')} km²)`
         };
       },
