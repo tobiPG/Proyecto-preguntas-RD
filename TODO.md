@@ -94,6 +94,8 @@
 - [x] Configuración verificada: toggles de Sonido, Vibración y Modo Oscuro funcionando con feedback inmediato al activarlos
 - [x] Código de promoción OZIELRD1: restaura las vidas al máximo, reutilizable sin límite
 - [x] Provincias y Escudos Provinciales: se evita repetir el mismo sujeto hasta que pasen 30 distintos (historial persistente)
+- [x] Modo Provincias vuelve a ser solo identificación por imagen (1 tipo); nuevo modo "Datos de las Provincias" (capital, región, población y superficie)
+- [x] Corregido bug de input de código promocional invisible (texto negro sobre fondo negro en modo oscuro del sistema)
 
 ---
 

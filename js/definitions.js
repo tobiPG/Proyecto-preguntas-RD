@@ -42,7 +42,7 @@ const RD_DATA = {
 
   // ===== PRESIDENTES DE REPÚBLICA DOMINICANA =====
   presidentes: [
-    { nombre: 'Pedro Santana', periodos: ['1844-1848', '1853-1856', '1858-1861'], partido: 'Conservador', dato: 'Primer presidente constitucional' },
+    { nombre: 'Pedro Santana', periodos: ['1844-1848', '1853-1856', '1858-1861'], partido: 'Conservador', dato: 'Primer presidente constitucional', eventoTras: { periodo: '1861-1865', evento: 'Anexión a España' } },
     { nombre: 'Manuel Jimenes', periodos: ['1848-1849'], partido: 'Liberal', dato: 'Segundo presidente del país' },
     { nombre: 'Buenaventura Báez', periodos: ['1849-1853', '1856-1858', '1865-1866', '1868-1874', '1876-1878'], partido: 'Rojo', dato: 'Presidente en 5 ocasiones' },
     { nombre: 'José Desiderio Valverde', periodos: ['1857-1858'], partido: 'Liberal', dato: 'Presidente durante la Revolución Cibaeña' },
@@ -71,7 +71,7 @@ const RD_DATA = {
     { nombre: 'Juan Pablo Duarte', titulo: 'Padre de la Patria', nacimiento: 1813, muerte: 1876, dato: 'Fundador de La Trinitaria, ideólogo de la independencia' },
     { nombre: 'Matías Ramón Mella', titulo: 'Padre de la Patria', nacimiento: 1816, muerte: 1864, dato: 'Disparó el trabucazo del 27 de febrero' },
     { nombre: 'Francisco del Rosario Sánchez', titulo: 'Padre de la Patria', nacimiento: 1817, muerte: 1861, dato: 'Primer presidente de la Junta Gubernativa' },
-    { nombre: 'María Trinidad Sánchez', titulo: 'Heroína', nacimiento: 1794, muerte: 1845, dato: 'Mártir de la independencia, confeccionó la primera bandera' },
+    { nombre: 'María Trinidad Sánchez', titulo: 'Heroína', nacimiento: 1794, muerte: 1845, dato: 'Mártir de la independencia, fusilada por conspirar contra el gobierno de Pedro Santana' },
     { nombre: 'Concepción Bona', titulo: 'Heroína', nacimiento: 1824, muerte: 1901, dato: 'Cosió la primera bandera dominicana' },
     { nombre: 'Salomé Ureña', titulo: 'Poetisa Nacional', nacimiento: 1850, muerte: 1897, dato: 'Fundadora del Instituto de Señoritas' },
     { nombre: 'Gregorio Luperón', titulo: 'Héroe de la Restauración', nacimiento: 1839, muerte: 1897, dato: 'Líder militar de la Guerra de Restauración' },
@@ -565,6 +565,13 @@ const CATEGORIES = {
     name: 'Provincias',
     icon: '🗺️',
     description: 'Identifica las provincias en el mapa',
+    questionsPerGame: 10
+  },
+  datosProvincias: {
+    id: 'datosProvincias',
+    name: 'Datos de las Provincias',
+    icon: '📊',
+    description: 'Capital, región, población y superficie',
     questionsPerGame: 10
   },
   personajes: {

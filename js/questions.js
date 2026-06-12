@@ -83,18 +83,35 @@ class QuestionGenerator {
     const questions = [];
     const provincias = this.prioritizeFresh(RD_DATA.provincias, recentIds);
     const allNames = RD_DATA.provincias.map(p => p.nombre);
+
+    for (let i = 0; i < Math.min(count, provincias.length); i++) {
+      const provincia = provincias[i];
+
+      questions.push({
+        type: 'provincias',
+        provinceId: provincia.id,
+        image: `img/provincias/${provincia.id}.png`,
+        question: '¿Cuál es esta provincia?',
+        hint: provincia.dato,
+        correctAnswer: provincia.nombre,
+        options: this.shuffle([provincia.nombre, ...this.getRandomOptions(provincia.nombre, allNames, 3)]),
+        detail: `Capital: ${provincia.capital}`
+      });
+    }
+
+    return questions;
+  }
+
+  /**
+   * Genera preguntas de datos provinciales (capital, región, población, superficie)
+   */
+  generateDatosProvinciasQuestions(count = 10) {
+    const questions = [];
+    const provincias = this.shuffle([...RD_DATA.provincias]);
     const allCapitales = RD_DATA.provincias.map(p => p.capital);
 
     const questionTypes = [
-      // Tipo 1: ¿Cuál es esta provincia?
-      (p) => ({
-        question: '¿Cuál es esta provincia?',
-        hint: p.dato,
-        correctAnswer: p.nombre,
-        options: this.shuffle([p.nombre, ...this.getRandomOptions(p.nombre, allNames, 3)]),
-        detail: `Capital: ${p.capital}`
-      }),
-      // Tipo 2: ¿Cuál es la capital de esta provincia?
+      // Tipo 1: ¿Cuál es la capital de esta provincia?
       (p) => ({
         question: `¿Cuál es la capital de ${p.nombre}?`,
         hint: p.dato,
@@ -102,7 +119,7 @@ class QuestionGenerator {
         options: this.shuffle([p.capital, ...this.getRandomOptions(p.capital, allCapitales, 3)]),
         detail: `La capital de ${p.nombre} es ${p.capital}`
       }),
-      // Tipo 3: ¿A qué región pertenece esta provincia?
+      // Tipo 2: ¿A qué región pertenece esta provincia?
       (p) => ({
         question: `¿A qué región pertenece ${p.nombre}?`,
         hint: `Capital: ${p.capital}`,
@@ -110,7 +127,7 @@ class QuestionGenerator {
         options: this.generateRegionOptions(p.region, 8),
         detail: `${p.nombre} pertenece a la región ${p.region}`
       }),
-      // Tipo 4: ¿Cuál de estas dos provincias tiene MÁS habitantes?
+      // Tipo 3: ¿Cuál de estas dos provincias tiene MÁS habitantes?
       (p, idx, arr) => {
         const otra = arr[(idx + 1) % arr.length];
         const mayor = p.poblacion > otra.poblacion ? p : otra;
@@ -122,6 +139,19 @@ class QuestionGenerator {
           options: this.shuffle([p.nombre, otra.nombre]),
           detail: `${mayor.nombre} (${mayor.poblacion.toLocaleString('es-DO')} hab.) tiene más población que ${menor.nombre} (${menor.poblacion.toLocaleString('es-DO')} hab.)`
         };
+      },
+      // Tipo 4: ¿Cuál de estas dos provincias tiene MAYOR superficie?
+      (p, idx, arr) => {
+        const otra = arr[(idx + 1) % arr.length];
+        const mayor = p.superficie > otra.superficie ? p : otra;
+        const menor = mayor === p ? otra : p;
+        return {
+          question: '¿Cuál de estas dos provincias tiene MAYOR superficie?',
+          hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
+          correctAnswer: mayor.nombre,
+          options: this.shuffle([p.nombre, otra.nombre]),
+          detail: `${mayor.nombre} (${mayor.superficie.toLocaleString('es-DO')} km²) tiene mayor superficie que ${menor.nombre} (${menor.superficie.toLocaleString('es-DO')} km²)`
+        };
       }
     ];
 
@@ -131,9 +161,7 @@ class QuestionGenerator {
       const template = questionTypes[typeIndex](provincia, i, provincias);
 
       questions.push({
-        type: 'provincias',
-        provinceId: provincia.id,
-        image: `img/provincias/${provincia.id}.png`,
+        type: 'datosProvincias',
         ...template
       });
     }
@@ -275,6 +303,15 @@ class QuestionGenerator {
     });
     timeline.sort((a, b) => a.inicio - b.inicio);
 
+    // Eventos históricos usados como respuesta/distractores en el Tipo 7
+    const HISTORICAL_EVENTS = [
+      'Anexión a España (1861-1865)',
+      'Ocupación Militar de Estados Unidos (1916-1924)',
+      'Ocupación Haitiana (1822-1844)',
+      'Guerra de la Restauración (1863-1865)',
+      'Era de Trujillo (1930-1961)'
+    ];
+
     const questionTypes = [
       // Tipo 1: ¿Quién gobernó en el período...?
       (p) => ({
@@ -342,9 +379,24 @@ class QuestionGenerator {
           detail: `${p.nombre} gobernó en: ${p.periodos.join(', ')}`
         };
       },
-      // Tipo 7: ¿Quién gobernó después de...? (basado en la línea de tiempo real)
+      // Tipo 7: ¿Quién/qué gobernó/sucedió después de...? (basado en la línea de tiempo real)
       (p) => {
         const lastPeriodo = p.periodos[p.periodos.length - 1];
+
+        // Si el período termina en un evento histórico (no en otro presidente),
+        // se pregunta por ese evento en lugar de por un sucesor inexistente
+        if (p.eventoTras) {
+          const correctAnswer = `${p.eventoTras.evento} (${p.eventoTras.periodo})`;
+          const otrosEventos = HISTORICAL_EVENTS.filter(e => e !== correctAnswer);
+          return {
+            question: `¿Qué sucedió después del gobierno de ${p.nombre} (${lastPeriodo})?`,
+            hint: `${p.nombre} era del partido ${p.partido}`,
+            correctAnswer,
+            options: this.shuffle([correctAnswer, ...this.shuffle(otrosEventos).slice(0, 3)]),
+            detail: `Después de ${p.nombre} (${lastPeriodo}): ${correctAnswer}`
+          };
+        }
+
         const idx = timeline.findIndex(t => t.nombre === p.nombre && t.periodo === lastPeriodo);
         const next = timeline[idx + 1];
         if (!next) return null;
@@ -1230,6 +1282,7 @@ class QuestionGenerator {
   generateRandomQuestions(count = 10) {
     const generators = [
       () => this.generateProvinciaQuestions(2),
+      () => this.generateDatosProvinciasQuestions(2),
       () => this.generatePersonajesQuestions(2),
       () => this.generatePresidentesQuestions(2),
       () => this.generatePeriodosQuestions(2),
@@ -1260,6 +1313,8 @@ class QuestionGenerator {
     switch (category) {
       case 'provincias':
         return this.generateProvinciaQuestions(count, recentIds);
+      case 'datosProvincias':
+        return this.generateDatosProvinciasQuestions(count);
       case 'personajes':
         return this.generatePersonajesQuestions(count);
       case 'presidentes':

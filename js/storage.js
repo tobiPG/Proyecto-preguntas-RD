@@ -26,6 +26,7 @@ class StorageManager {
       // Progreso por categoría
       categoryProgress: {
         provincias: { played: 0, correct: 0, mastered: [] },
+        datosProvincias: { played: 0, correct: 0, mastered: [] },
         personajes: { played: 0, correct: 0, mastered: [] },
         presidentes: { played: 0, correct: 0, mastered: [] },
         periodos: { played: 0, correct: 0, mastered: [] },

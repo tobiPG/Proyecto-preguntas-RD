@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rdquiz-v2';
+const CACHE_NAME = 'rdquiz-v3';
 const ASSETS = [
   './',
   './index.html',
