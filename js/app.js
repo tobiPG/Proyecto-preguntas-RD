@@ -47,7 +47,6 @@ class RDQuizApp {
     this.updateLivesDisplay();
     this.updateCoinsDisplay();
     this.updateImmunityDisplay();
-    this.updateAdsVisibility();
     this.applyDarkMode();
     this.loadMap();
     this.registerServiceWorker();
@@ -184,21 +183,12 @@ class RDQuizApp {
         parseInt(item.dataset.price)
       ));
     });
-    
-    // Suscripción Premium
-    document.getElementById('btn-premium-monthly').addEventListener('click', () => this.purchasePremium(1));
-    document.getElementById('btn-premium-annual').addEventListener('click', () => this.purchasePremium(12));
-    
-    // Comprar monedas
-    document.getElementById('buy-coins-100').addEventListener('click', () => this.purchaseCoins(100, 2.99));
-    document.getElementById('buy-coins-500').addEventListener('click', () => this.purchaseCoins(550, 4.99));
-    document.getElementById('buy-coins-1000').addEventListener('click', () => this.purchaseCoins(1200, 8.99));
-    
-    // Ver anuncio
-    document.getElementById('btn-watch-ad').addEventListener('click', () => this.watchAdForCoins());
-    
-    // Restaurar compras
-    document.getElementById('btn-restore-purchases').addEventListener('click', () => this.restorePurchases());
+
+    // Código de promoción
+    document.getElementById('btn-redeem-code').addEventListener('click', () => this.redeemPromoCode());
+    document.getElementById('promo-code-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') this.redeemPromoCode();
+    });
   }
 
   /**
@@ -213,7 +203,6 @@ class RDQuizApp {
       this.updateHomeProgress();
       this.updateLivesDisplay();
       this.updateCoinsDisplay();
-      this.updateAdsVisibility();
     }
   }
 
@@ -441,20 +430,20 @@ class RDQuizApp {
     this.quizElements.feedbackContainer.classList.add(isCorrect ? 'correct' : 'wrong');
 
     if (isCorrect) {
+      sounds.playCorrect();
       this.quizElements.feedbackIcon.textContent = '✅';
       this.quizElements.feedbackText.textContent = '¡Correcto!';
-      
+
       let detail = '';
       if (this.streak > 1) {
         detail = `🔥 Racha de ${this.streak}`;
       }
       this.quizElements.feedbackDetail.textContent = detail || question.detail || '';
     } else {
+      sounds.playWrong();
       this.quizElements.feedbackIcon.textContent = '❌';
       this.quizElements.feedbackText.textContent = 'Incorrecto';
-      if (storage.isPremium()) {
-        this.quizElements.feedbackDetail.textContent = `👑 ¡Premium! No perdiste vida. Respuesta: ${question.correctAnswer}`;
-      } else if (hasImmunity) {
+      if (hasImmunity) {
         this.quizElements.feedbackDetail.textContent = `🛡️ ¡Inmunidad activa! No perdiste vida. Respuesta: ${question.correctAnswer}`;
       } else {
         const livesLeft = storage.getLives();
@@ -528,6 +517,8 @@ class RDQuizApp {
         }
       });
 
+      sounds.playWrong();
+
       this.quizElements.feedbackContainer.classList.remove('hidden', 'correct', 'wrong');
       this.quizElements.feedbackContainer.classList.add('wrong');
       this.quizElements.feedbackIcon.textContent = '⏱️';
@@ -594,20 +585,19 @@ class RDQuizApp {
     this.resultsElements.streak.textContent = storage.getStats().dailyStreak;
 
     // Otorgar monedas basado en puntuación de la ronda (1 moneda por cada 20 puntos)
-    if (!storage.isPremium()) {
-      const coinsEarned = Math.floor(this.score / 20);
-      if (coinsEarned > 0) {
-        storage.addCoins(coinsEarned);
-        setTimeout(() => {
-          this.showToast(`+${coinsEarned} 🪙 por tu puntuación`, '🪙');
-        }, 500);
-      }
+    const coinsEarned = Math.floor(this.score / 20);
+    if (coinsEarned > 0) {
+      storage.addCoins(coinsEarned);
+      setTimeout(() => {
+        this.showToast(`+${coinsEarned} 🪙 por tu puntuación`, '🪙');
+      }, 500);
     }
 
     // Verificar logros nuevos
     const newAchievements = storage.checkAchievements();
     if (newAchievements.length > 0) {
       setTimeout(() => {
+        sounds.playAchievement();
         this.showToast(`🏆 ¡Logro desbloqueado: ${newAchievements[0].name}!`);
       }, 1500);
     }
@@ -784,14 +774,7 @@ class RDQuizApp {
    */
   updateLivesDisplay() {
     if (!this.livesElements.container) return;
-    
-    // Si es premium, mostrar infinito
-    if (storage.isPremium()) {
-      this.livesElements.display.innerHTML = '<span class="premium-lives">👑 ∞</span>';
-      this.livesElements.timer.classList.add('hidden');
-      return;
-    }
-    
+
     const lives = storage.getLives();
     const maxLives = this.MAX_LIVES;
     
@@ -824,13 +807,7 @@ class RDQuizApp {
    */
   updateQuizLivesDisplay() {
     if (!this.livesElements.quizDisplay) return;
-    
-    // Si es premium, mostrar infinito
-    if (storage.isPremium()) {
-      this.livesElements.quizDisplay.innerHTML = '👑 ∞';
-      return;
-    }
-    
+
     const lives = storage.getLives();
     let heartsHTML = '';
     for (let i = 0; i < this.MAX_LIVES; i++) {
@@ -1052,6 +1029,14 @@ class RDQuizApp {
       vibrationEnabled: value ? 'Vibración activada' : 'Vibración desactivada'
     };
     this.showToast(labels[setting], value ? '✓' : '✗');
+
+    // Feedback inmediato para confirmar que el ajuste funciona
+    if (setting === 'soundEnabled' && value) {
+      sounds.playCorrect();
+    }
+    if (setting === 'vibrationEnabled' && value && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
   }
 
   /**
@@ -1169,16 +1154,16 @@ class RDQuizApp {
   showStore() {
     // Actualizar monedas
     document.getElementById('store-coins').textContent = storage.getCoins();
-    
-    // Mostrar/ocultar estado premium
-    const premiumStatus = document.getElementById('premium-status');
-    if (storage.isPremium()) {
-      premiumStatus.classList.remove('hidden');
-      document.getElementById('premium-days-left').textContent = storage.getPremiumDaysLeft();
-    } else {
-      premiumStatus.classList.add('hidden');
+
+    // Limpiar campo de código de promoción
+    const promoInput = document.getElementById('promo-code-input');
+    const promoMessage = document.getElementById('promo-code-message');
+    if (promoInput) promoInput.value = '';
+    if (promoMessage) {
+      promoMessage.textContent = '';
+      promoMessage.classList.remove('success', 'error');
     }
-    
+
     this.showScreen('store');
   }
 
@@ -1206,125 +1191,23 @@ class RDQuizApp {
   }
 
   /**
-   * Compra suscripción premium (simulado)
+   * Canjea un código de promoción por monedas
    */
-  purchasePremium(months) {
-    // En producción, esto conectaría con Google Play / App Store
-    const prices = { 1: 4.99, 12: 39.99 };
-    const price = prices[months];
-    
-    this.showModal(
-      '👑 Confirmar Compra',
-      `¿Deseas suscribirte por ${months === 1 ? '1 mes' : '1 año'} por $${price}?<br><br><small>Nota: Esta es una simulación. En la versión final se conectará con la tienda de aplicaciones.</small>`,
-      () => {
-        storage.activatePremium(months);
-        this.showToast('¡Bienvenido a Premium!', '👑');
-        this.showStore(); // Actualizar UI
-        this.updateLivesDisplay();
-        this.updateAdsVisibility();
-      }
-    );
-  }
+  redeemPromoCode() {
+    const input = document.getElementById('promo-code-input');
+    const message = document.getElementById('promo-code-message');
+    const result = storage.redeemPromoCode(input.value);
 
-  /**
-   * Compra monedas (simulado)
-   */
-  purchaseCoins(amount, price) {
-    // En producción, esto conectaría con Google Play / App Store
-    this.showModal(
-      '🪙 Confirmar Compra',
-      `¿Deseas comprar ${amount} monedas por $${price}?<br><br><small>Nota: Esta es una simulación. En la versión final se conectará con la tienda de aplicaciones.</small>`,
-      () => {
-        storage.addCoins(amount);
-        this.showToast(`¡Obtuviste ${amount} monedas!`, '🪙');
-        document.getElementById('store-coins').textContent = storage.getCoins();
-      }
-    );
-  }
+    message.textContent = result.message;
+    message.classList.remove('success', 'error');
+    message.classList.add(result.success ? 'success' : 'error');
 
-  /**
-   * Ver anuncio para obtener monedas
-   */
-  watchAdForCoins() {
-    // Crear modal de anuncio
-    let adModal = document.getElementById('ad-interstitial');
-    if (!adModal) {
-      adModal = document.createElement('div');
-      adModal.id = 'ad-interstitial';
-      adModal.className = 'ad-interstitial';
-      adModal.innerHTML = `
-        <div class="ad-interstitial-content">
-          <h3>📺 Anuncio</h3>
-          <p>Gracias por ver este anuncio.</p>
-          <p>En la versión final aquí aparecerá un video publicitario.</p>
-          <div style="font-size: 3rem; margin: 1rem 0;">🎬</div>
-        </div>
-        <p class="ad-close-timer">Podrás cerrar en <span id="ad-timer">5</span> segundos</p>
-        <button class="btn-close-ad hidden" id="btn-close-ad">Cerrar y obtener 🪙 10</button>
-      `;
-      document.body.appendChild(adModal);
-    }
-    
-    adModal.classList.remove('hidden');
-    const closeBtn = document.getElementById('btn-close-ad');
-    const timerSpan = document.getElementById('ad-timer');
-    closeBtn.classList.add('hidden');
-    
-    let countdown = 5;
-    timerSpan.textContent = countdown;
-    
-    const timer = setInterval(() => {
-      countdown--;
-      timerSpan.textContent = countdown;
-      
-      if (countdown <= 0) {
-        clearInterval(timer);
-        closeBtn.classList.remove('hidden');
-        document.querySelector('.ad-close-timer').textContent = '¡Anuncio completado!';
-      }
-    }, 1000);
-    
-    // Evento de cierre (solo una vez)
-    closeBtn.onclick = () => {
-      adModal.classList.add('hidden');
-      storage.addCoins(10);
-      this.showToast('¡Obtuviste 10 monedas!', '🪙');
+    if (result.success) {
+      input.value = '';
       document.getElementById('store-coins').textContent = storage.getCoins();
-      // Resetear timer text
-      document.querySelector('.ad-close-timer').innerHTML = 'Podrás cerrar en <span id="ad-timer">5</span> segundos';
-    };
-  }
-
-  /**
-   * Restaurar compras
-   */
-  restorePurchases() {
-    // En producción, esto verificaría las compras en la tienda
-    this.showToast('Verificando compras...', '🔄');
-    
-    setTimeout(() => {
-      if (storage.isPremium()) {
-        this.showToast('Suscripción Premium restaurada', '👑');
-      } else {
-        this.showToast('No se encontraron compras para restaurar', 'ℹ️');
-      }
-    }, 1500);
-  }
-
-  /**
-   * Actualiza la visibilidad de anuncios según estado premium
-   */
-  updateAdsVisibility() {
-    const adBanners = document.querySelectorAll('.ad-banner');
-    const isPremium = storage.isPremium();
-    
-    adBanners.forEach(banner => {
-      if (isPremium) {
-        banner.classList.add('hidden');
-      } else {
-        banner.classList.remove('hidden');
-      }
-    });
+      this.updateCoinsDisplay();
+      this.showToast(result.message, '🪙');
+    }
   }
 
   /**

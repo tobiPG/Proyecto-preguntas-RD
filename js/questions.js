@@ -6,6 +6,23 @@
 class QuestionGenerator {
   constructor() {
     this.usedQuestions = new Set();
+
+    // Las 10 regiones organizadas por macroregión
+    this.REGIONES = [
+      // Cibao
+      'Cibao Norte',
+      'Cibao Sur',
+      'Cibao Nordeste',
+      'Cibao Noroeste',
+      // Sur
+      'Valdesia',
+      'El Valle',
+      'Enriquillo',
+      // Oriental/Este
+      'Yuma',
+      'Higuamo',
+      'Ozama'
+    ];
   }
 
   /**
@@ -36,27 +53,78 @@ class QuestionGenerator {
   }
 
   /**
+   * Genera opciones de regiones, siempre incluyendo la correcta
+   */
+  generateRegionOptions(correctRegion, totalOptions = 8) {
+    const options = [correctRegion];
+    const others = this.shuffle(this.REGIONES.filter(r => r !== correctRegion));
+
+    for (let i = 0; i < totalOptions - 1 && i < others.length; i++) {
+      options.push(others[i]);
+    }
+
+    return this.shuffle(options);
+  }
+
+  /**
    * Genera preguntas de provincias
    */
   generateProvinciaQuestions(count = 10) {
     const questions = [];
     const provincias = this.shuffle([...RD_DATA.provincias]);
     const allNames = RD_DATA.provincias.map(p => p.nombre);
+    const allCapitales = RD_DATA.provincias.map(p => p.capital);
+
+    const questionTypes = [
+      // Tipo 1: ¿Cuál es esta provincia?
+      (p) => ({
+        question: '¿Cuál es esta provincia?',
+        hint: p.dato,
+        correctAnswer: p.nombre,
+        options: this.shuffle([p.nombre, ...this.getRandomOptions(p.nombre, allNames, 3)]),
+        detail: `Capital: ${p.capital}`
+      }),
+      // Tipo 2: ¿Cuál es la capital de esta provincia?
+      (p) => ({
+        question: `¿Cuál es la capital de ${p.nombre}?`,
+        hint: p.dato,
+        correctAnswer: p.capital,
+        options: this.shuffle([p.capital, ...this.getRandomOptions(p.capital, allCapitales, 3)]),
+        detail: `La capital de ${p.nombre} es ${p.capital}`
+      }),
+      // Tipo 3: ¿A qué región pertenece esta provincia?
+      (p) => ({
+        question: `¿A qué región pertenece ${p.nombre}?`,
+        hint: `Capital: ${p.capital}`,
+        correctAnswer: p.region,
+        options: this.generateRegionOptions(p.region, 8),
+        detail: `${p.nombre} pertenece a la región ${p.region}`
+      }),
+      // Tipo 4: ¿Cuál de estas dos provincias tiene MÁS habitantes?
+      (p, idx, arr) => {
+        const otra = arr[(idx + 1) % arr.length];
+        const mayor = p.poblacion > otra.poblacion ? p : otra;
+        const menor = mayor === p ? otra : p;
+        return {
+          question: '¿Cuál de estas dos provincias tiene MÁS habitantes?',
+          hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
+          correctAnswer: mayor.nombre,
+          options: this.shuffle([p.nombre, otra.nombre]),
+          detail: `${mayor.nombre} (${mayor.poblacion.toLocaleString('es-DO')} hab.) tiene más población que ${menor.nombre} (${menor.poblacion.toLocaleString('es-DO')} hab.)`
+        };
+      }
+    ];
 
     for (let i = 0; i < Math.min(count, provincias.length); i++) {
       const provincia = provincias[i];
-      const wrongOptions = this.getRandomOptions(provincia.nombre, allNames, 3);
-      const options = this.shuffle([provincia.nombre, ...wrongOptions]);
+      const typeIndex = i % questionTypes.length;
+      const template = questionTypes[typeIndex](provincia, i, provincias);
 
       questions.push({
         type: 'provincias',
-        question: '¿Cuál es esta provincia?',
-        hint: provincia.dato,
-        correctAnswer: provincia.nombre,
-        options: options,
         provinceId: provincia.id,
         image: `img/provincias/${provincia.id}.png`,
-        detail: `Capital: ${provincia.capital}`
+        ...template
       });
     }
 
@@ -71,7 +139,7 @@ class QuestionGenerator {
     const questions = [];
     const personajes = this.shuffle([...RD_DATA.personajes]);
     const allNames = RD_DATA.personajes.map(p => p.nombre);
-    const allTitulos = RD_DATA.personajes.map(p => p.titulo);
+    const allTitulos = [...new Set(RD_DATA.personajes.map(p => p.titulo))];
 
     const questionTypes = [
       // Tipo 1: ¿Quién fue conocido como...?
@@ -139,13 +207,35 @@ class QuestionGenerator {
           ]),
           detail: `${p.nombre} (${p.nacimiento}-${p.muerte})`
         };
+      },
+      // Tipo 7: ¿Cuál de estos dos personajes nació primero?
+      (p, idx, arr) => {
+        let otro = arr[(idx + 1) % arr.length];
+        let offset = 1;
+        while (otro.nacimiento === p.nacimiento && offset < arr.length) {
+          offset++;
+          otro = arr[(idx + offset) % arr.length];
+        }
+        const primero = p.nacimiento < otro.nacimiento ? p : otro;
+        const segundo = primero === p ? otro : p;
+        return {
+          question: '¿Cuál de estos dos personajes nació primero?',
+          hint: `Compara: ${p.nombre} vs ${otro.nombre}`,
+          correctAnswer: primero.nombre,
+          options: this.shuffle([p.nombre, otro.nombre]),
+          detail: `${primero.nombre} (${primero.nacimiento}) nació antes que ${segundo.nombre} (${segundo.nacimiento})`
+        };
       }
     ];
 
+    // Se mezcla el orden de los tipos para que, con lotes de 5 preguntas,
+    // todos los tipos tengan oportunidad de aparecer entre rondas
+    const typeOrder = this.shuffle(questionTypes.map((_, idx) => idx));
+
     for (let i = 0; i < Math.min(count, personajes.length); i++) {
       const personaje = personajes[i];
-      const typeIndex = i % questionTypes.length;
-      const template = questionTypes[typeIndex](personaje);
+      const typeIndex = typeOrder[i % typeOrder.length];
+      const template = questionTypes[typeIndex](personaje, i, personajes);
 
       questions.push({
         type: 'personajes',
@@ -165,6 +255,15 @@ class QuestionGenerator {
     const presidentes = this.shuffle([...RD_DATA.presidentes]);
     const allNames = RD_DATA.presidentes.map(p => p.nombre);
     const allPartidos = [...new Set(RD_DATA.presidentes.map(p => p.partido))];
+
+    // Línea de tiempo cronológica de todos los períodos presidenciales
+    const timeline = [];
+    RD_DATA.presidentes.forEach(p => {
+      p.periodos.forEach(periodo => {
+        timeline.push({ nombre: p.nombre, periodo, inicio: parseInt(periodo.split('-')[0]) });
+      });
+    });
+    timeline.sort((a, b) => a.inicio - b.inicio);
 
     const questionTypes = [
       // Tipo 1: ¿Quién gobernó en el período...?
@@ -233,24 +332,27 @@ class QuestionGenerator {
           detail: `${p.nombre} gobernó en: ${p.periodos.join(', ')}`
         };
       },
-      // Tipo 7: ¿Quién fue presidente antes/después de...?
-      (p, idx, arr) => {
-        const nextIdx = (idx + 1) % arr.length;
-        const nextPres = arr[nextIdx];
+      // Tipo 7: ¿Quién gobernó después de...? (basado en la línea de tiempo real)
+      (p) => {
+        const lastPeriodo = p.periodos[p.periodos.length - 1];
+        const idx = timeline.findIndex(t => t.nombre === p.nombre && t.periodo === lastPeriodo);
+        const next = timeline[idx + 1];
+        if (!next) return null;
         return {
-          question: `¿Quién gobernó después de ${p.nombre} (${p.periodos[p.periodos.length - 1]})?`,
+          question: `¿Quién gobernó después de ${p.nombre} (${lastPeriodo})?`,
           hint: `${p.nombre} era del partido ${p.partido}`,
-          correctAnswer: nextPres.nombre,
-          options: this.shuffle([nextPres.nombre, ...this.getRandomOptions(nextPres.nombre, allNames, 3)]),
-          detail: `${nextPres.nombre} sucedió a ${p.nombre}`
+          correctAnswer: next.nombre,
+          options: this.shuffle([next.nombre, ...this.getRandomOptions(next.nombre, allNames, 3)]),
+          detail: `${next.nombre} gobernó a partir de ${next.periodo}`
         };
       }
     ];
 
+    const typeOrder = this.shuffle(questionTypes.map((_, idx) => idx));
     for (let i = 0; i < Math.min(count, presidentes.length); i++) {
       const presidente = presidentes[i];
-      const typeIndex = i % 6; // Usar los primeros 6 tipos (el 7 es más complejo)
-      const template = questionTypes[typeIndex](presidente, i, presidentes);
+      const typeIndex = typeOrder[i % typeOrder.length];
+      const template = questionTypes[typeIndex](presidente, i, presidentes) || questionTypes[0](presidente, i, presidentes);
 
       questions.push({
         type: 'presidentes',
@@ -329,21 +431,29 @@ class QuestionGenerator {
         detail: a.texto.substring(0, 100) + '...'
       }),
       // Tipo 2: ¿Qué artículo establece...?
-      (a) => ({
-        question: `¿Qué artículo de la Constitución establece "${a.titulo}"?`,
-        hint: a.texto.substring(0, 50) + '...',
-        correctAnswer: `Artículo ${a.articulo}`,
-        options: this.shuffle([
-          `Artículo ${a.articulo}`,
-          `Artículo ${Math.max(1, a.articulo - 5)}`,
-          `Artículo ${a.articulo + 7}`,
-          `Artículo ${a.articulo + 15}`
-        ]),
-        detail: a.texto.substring(0, 100) + '...'
-      }),
+      (a) => {
+        const offsets = this.shuffle([5, 7, 10, 15, 20, -5, -7, -10, -15, -20]);
+        const wrongNumbers = [];
+        for (const offset of offsets) {
+          const num = a.articulo + offset;
+          if (num >= 1 && num !== a.articulo && !wrongNumbers.includes(num)) {
+            wrongNumbers.push(num);
+            if (wrongNumbers.length >= 3) break;
+          }
+        }
+        return {
+          question: `¿Qué artículo de la Constitución establece "${a.titulo}"?`,
+          hint: a.texto.substring(0, 50) + '...',
+          correctAnswer: `Artículo ${a.articulo}`,
+          options: this.shuffle([
+            `Artículo ${a.articulo}`,
+            ...wrongNumbers.map(n => `Artículo ${n}`)
+          ]),
+          detail: a.texto.substring(0, 100) + '...'
+        };
+      },
       // Tipo 3: Completar texto
       (a) => {
-        const palabrasClave = a.titulo.split(' ');
         return {
           question: `Según la Constitución, el Artículo ${a.articulo} trata sobre:`,
           hint: `"${a.texto.substring(0, 40)}..."`,
@@ -354,12 +464,28 @@ class QuestionGenerator {
           ]),
           detail: a.texto
         };
+      },
+      // Tipo 4: ¿Cuál de estas frases corresponde al Artículo X?
+      (a) => {
+        const excerpt = (texto) => texto.length > 60 ? texto.substring(0, 60) + '...' : texto;
+        const otrosExcerptos = [...new Set(
+          RD_DATA.constitucion
+            .filter(x => x.articulo !== a.articulo)
+            .map(x => excerpt(x.texto))
+        )];
+        return {
+          question: `¿Cuál de estas frases corresponde al Artículo ${a.articulo} de la Constitución?`,
+          hint: `Trata sobre: ${a.titulo}`,
+          correctAnswer: excerpt(a.texto),
+          options: this.shuffle([excerpt(a.texto), ...this.getRandomOptions(excerpt(a.texto), otrosExcerptos, 3)]),
+          detail: a.texto
+        };
       }
     ];
 
     for (let i = 0; i < Math.min(count, articulos.length); i++) {
       const articulo = articulos[i];
-      const typeIndex = i % 3;
+      const typeIndex = i % questionTypes.length;
       const template = questionTypes[typeIndex](articulo);
 
       questions.push({
@@ -377,42 +503,100 @@ class QuestionGenerator {
    */
   generateFechasQuestions(count = 10) {
     const questions = [];
-    // Filtrar solo fechas que tienen año definido
-    const fechasConAño = RD_DATA.fechas.filter(f => f.año);
-    const fechas = this.shuffle([...fechasConAño]);
+    const fechas = this.shuffle([...RD_DATA.fechas]);
+
+    // Etiquetas legibles para cada categoría histórica
+    const CATEGORIA_LABELS = {
+      colonial: 'Período Colonial',
+      independencia: 'Independencia',
+      batallas: 'Batallas Históricas',
+      restauracion: 'Guerra de Restauración',
+      siglo20: 'Siglo XX',
+      festividades: 'Día Patrio o Conmemoración',
+      contemporaneo: 'Era Contemporánea'
+    };
+    const allCategoryLabels = Object.values(CATEGORIA_LABELS);
 
     /**
      * Genera 4 opciones de años cercanos al año correcto
      */
     const generateYearOptions = (correctYear) => {
       const options = [correctYear];
-      const variations = [-2, -4, -6, -8, -10, 2, 4, 6, 8, 10, -12, 12, -3, 3, -5, 5];
-      const shuffledVariations = this.shuffle(variations);
-      
-      for (const variation of shuffledVariations) {
+      const variations = this.shuffle([-2, -4, -6, -8, -10, 2, 4, 6, 8, 10, -12, 12, -3, 3, -5, 5]);
+
+      for (const variation of variations) {
         const newYear = correctYear + variation;
         if (newYear > 1400 && newYear <= 2026 && !options.includes(newYear)) {
           options.push(newYear);
           if (options.length >= 4) break;
         }
       }
-      
+
       return this.shuffle(options);
+    };
+
+    const questionTypes = {
+      // Tipo A: ¿En qué año ocurrió X? (requiere año)
+      year: (f) => {
+        const yearOptions = generateYearOptions(f.año);
+        return {
+          question: `¿En qué año ${f.descripcion.charAt(0).toLowerCase() + f.descripcion.slice(1)}?`,
+          hint: f.evento,
+          correctAnswer: f.año.toString(),
+          options: yearOptions.map(y => y.toString()),
+          detail: `${f.evento} - ${f.fecha}`
+        };
+      },
+      // Tipo B: ¿Cuál de estos eventos ocurrió en el año X? (requiere año)
+      event: (f) => {
+        const candidates = [...new Set(
+          RD_DATA.fechas.filter(x => x.año !== f.año).map(x => x.evento)
+        )];
+        return {
+          question: `¿Cuál de estos eventos ocurrió en el año ${f.año}?`,
+          hint: f.descripcion,
+          correctAnswer: f.evento,
+          options: this.shuffle([f.evento, ...this.getRandomOptions(f.evento, candidates, 3)]),
+          detail: `${f.evento} - ${f.fecha}`
+        };
+      },
+      // Tipo C: ¿A qué período histórico pertenece...? (cualquier fecha)
+      category: (f) => {
+        const correctLabel = CATEGORIA_LABELS[f.categoria];
+        return {
+          question: `¿A qué período histórico pertenece "${f.evento}"?`,
+          hint: f.descripcion,
+          correctAnswer: correctLabel,
+          options: this.shuffle([correctLabel, ...this.getRandomOptions(correctLabel, allCategoryLabels, 3)]),
+          detail: `${f.evento} - ${f.fecha}`
+        };
+      },
+      // Tipo D: ¿En qué fecha se celebra...? (solo días patrios sin año)
+      festividad: (f) => {
+        const candidates = [...new Set(
+          RD_DATA.fechas.filter(x => !x.año && x.fecha !== f.fecha).map(x => x.fecha)
+        )];
+        return {
+          question: `¿En qué fecha se celebra "${f.evento}"?`,
+          hint: f.descripcion,
+          correctAnswer: f.fecha,
+          options: this.shuffle([f.fecha, ...this.getRandomOptions(f.fecha, candidates, 3)]),
+          detail: `${f.evento} - ${f.descripcion}`
+        };
+      }
     };
 
     for (let i = 0; i < Math.min(count, fechas.length); i++) {
       const fecha = fechas[i];
-      
-      // Todas las preguntas son del tipo "¿En qué año...?"
-      const yearOptions = generateYearOptions(fecha.año);
-      
+      const availableTypes = fecha.año
+        ? ['year', 'event', 'category']
+        : ['category', 'festividad'];
+      const typeKey = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+      const template = questionTypes[typeKey](fecha);
+
       questions.push({
         type: 'fechas',
-        question: `¿En qué año ${fecha.descripcion.charAt(0).toLowerCase() + fecha.descripcion.slice(1)}?`,
-        hint: fecha.evento,
-        correctAnswer: fecha.año.toString(),
-        options: yearOptions.map(y => y.toString()),
-        detail: `${fecha.evento} - ${fecha.fecha}`
+        ...template
       });
     }
 
@@ -426,51 +610,85 @@ class QuestionGenerator {
   generateRegionesQuestions(count = 10) {
     const questions = [];
     const provincias = this.shuffle([...RD_DATA.provincias]);
-    
-    // Las 10 regiones organizadas por macroregión
-    const REGIONES = [
-      // Cibao
-      'Cibao Norte',
-      'Cibao Sur', 
-      'Cibao Nordeste',
-      'Cibao Noroeste',
-      // Sur
-      'Valdesia',
-      'El Valle',
-      'Enriquillo',
-      // Oriental/Este
-      'Yuma',
-      'Higuamo',
-      'Ozama'
-    ];
 
-    /**
-     * Genera 8 opciones de regiones, siempre incluyendo la correcta
-     */
-    const generate8Options = (correctRegion) => {
-      const options = [correctRegion];
-      const otherRegions = REGIONES.filter(r => r !== correctRegion);
-      const shuffledOthers = this.shuffle(otherRegions);
-      
-      // Agregar 7 regiones más para completar 8 opciones
-      for (let i = 0; i < 7 && i < shuffledOthers.length; i++) {
-        options.push(shuffledOthers[i]);
+    const questionTypes = [
+      // Tipo 1: ¿A qué región pertenece esta provincia? (8 opciones de región)
+      (p) => ({
+        question: `¿A qué región pertenece ${p.nombre}?`,
+        hint: `Capital: ${p.capital}`,
+        correctAnswer: p.region,
+        options: this.generateRegionOptions(p.region, 8),
+        detail: `${p.nombre} pertenece a la región ${p.region}`
+      }),
+      // Tipo 2: ¿Cuál de estas provincias pertenece a la región X?
+      (p) => {
+        const otrasProvincias = RD_DATA.provincias
+          .filter(x => x.region !== p.region)
+          .map(x => x.nombre);
+        return {
+          question: `¿Cuál de estas provincias pertenece a la región ${p.region}?`,
+          hint: `Capital: ${p.capital}`,
+          correctAnswer: p.nombre,
+          options: this.shuffle([p.nombre, ...this.getRandomOptions(p.nombre, otrasProvincias, 3)]),
+          detail: `${p.nombre} pertenece a la región ${p.region}`
+        };
+      },
+      // Tipo 3: ¿Cuántas provincias conforman la región X?
+      (p) => {
+        const numProvincias = RD_DATA.provincias.filter(x => x.region === p.region).length;
+        return {
+          question: `¿Cuántas provincias conforman la región ${p.region}?`,
+          hint: `${p.nombre} es una de ellas`,
+          correctAnswer: numProvincias.toString(),
+          options: this.shuffle([
+            numProvincias.toString(),
+            (numProvincias - 1).toString(),
+            (numProvincias + 1).toString(),
+            (numProvincias + 2).toString()
+          ]),
+          detail: `La región ${p.region} está conformada por ${numProvincias} provincia${numProvincias === 1 ? '' : 's'}`
+        };
+      },
+      // Tipo 4: ¿Cuál es la provincia más poblada de la región X?
+      (p) => {
+        const provinciasRegion = RD_DATA.provincias.filter(x => x.region === p.region);
+        const masPoblada = provinciasRegion.reduce((a, b) => a.poblacion > b.poblacion ? a : b);
+        const otrasMismaRegion = provinciasRegion.filter(x => x.nombre !== masPoblada.nombre).map(x => x.nombre);
+        const otrasRegiones = this.shuffle(RD_DATA.provincias.filter(x => x.region !== p.region).map(x => x.nombre));
+        const wrongOptions = [...otrasMismaRegion, ...otrasRegiones].slice(0, 3);
+        return {
+          question: `¿Cuál es la provincia más poblada de la región ${p.region}?`,
+          hint: `${provinciasRegion.length} provincia${provinciasRegion.length === 1 ? '' : 's'} en esta región`,
+          correctAnswer: masPoblada.nombre,
+          options: this.shuffle([masPoblada.nombre, ...wrongOptions]),
+          detail: `${masPoblada.nombre} tiene ${masPoblada.poblacion.toLocaleString('es-DO')} habitantes`
+        };
+      },
+      // Tipo 5: ¿Cuál es la provincia con mayor superficie de la región X?
+      (p) => {
+        const provinciasRegion = RD_DATA.provincias.filter(x => x.region === p.region);
+        const masGrande = provinciasRegion.reduce((a, b) => a.superficie > b.superficie ? a : b);
+        const otrasMismaRegion = provinciasRegion.filter(x => x.nombre !== masGrande.nombre).map(x => x.nombre);
+        const otrasRegiones = this.shuffle(RD_DATA.provincias.filter(x => x.region !== p.region).map(x => x.nombre));
+        const wrongOptions = [...otrasMismaRegion, ...otrasRegiones].slice(0, 3);
+        return {
+          question: `¿Cuál es la provincia con mayor superficie de la región ${p.region}?`,
+          hint: `${provinciasRegion.length} provincia${provinciasRegion.length === 1 ? '' : 's'} en esta región`,
+          correctAnswer: masGrande.nombre,
+          options: this.shuffle([masGrande.nombre, ...wrongOptions]),
+          detail: `${masGrande.nombre} tiene ${masGrande.superficie.toLocaleString('es-DO')} km²`
+        };
       }
-      
-      return this.shuffle(options);
-    };
+    ];
 
     for (let i = 0; i < Math.min(count, provincias.length); i++) {
       const provincia = provincias[i];
-      const options = generate8Options(provincia.region);
+      const typeIndex = i % questionTypes.length;
+      const template = questionTypes[typeIndex](provincia);
 
       questions.push({
         type: 'regiones',
-        question: `¿A qué región pertenece ${provincia.nombre}?`,
-        hint: `Capital: ${provincia.capital}`,
-        correctAnswer: provincia.region,
-        options: options,
-        detail: `${provincia.nombre} pertenece a la región ${provincia.region}`
+        ...template
       });
     }
 
@@ -484,7 +702,7 @@ class QuestionGenerator {
   generateSuperficieQuestions(count = 10) {
     const questions = [];
     const provincias = this.shuffle([...RD_DATA.provincias]);
-    
+
     /**
      * Genera 4 opciones de superficie cercanas a la correcta
      */
@@ -492,7 +710,7 @@ class QuestionGenerator {
       const options = [`${correctArea.toLocaleString('es-DO')} km²`];
       const variations = [0.7, 0.85, 1.15, 1.3, 0.6, 1.4, 0.75, 1.25];
       const shuffledVariations = this.shuffle(variations);
-      
+
       for (const variation of shuffledVariations) {
         const newArea = Math.round(correctArea * variation * 10) / 10;
         const formatted = `${newArea.toLocaleString('es-DO')} km²`;
@@ -501,22 +719,88 @@ class QuestionGenerator {
           if (options.length >= 4) break;
         }
       }
-      
+
       return this.shuffle(options);
     };
 
+    const questionTypes = [
+      // Tipo 1: ¿Cuál es la superficie de X?
+      (p) => ({
+        question: `¿Cuál es la superficie de ${p.nombre}?`,
+        hint: `Región: ${p.region}`,
+        correctAnswer: `${p.superficie.toLocaleString('es-DO')} km²`,
+        options: generateAreaOptions(p.superficie),
+        image: `img/provincias/${p.id}.png`,
+        detail: `${p.nombre} tiene ${p.superficie.toLocaleString('es-DO')} km²`
+      }),
+      // Tipo 2: ¿Cuál de estas dos provincias tiene mayor superficie?
+      (p, idx, arr) => {
+        const otra = arr[(idx + 1) % arr.length];
+        const mayor = p.superficie > otra.superficie ? p : otra;
+        const menor = mayor === p ? otra : p;
+        return {
+          question: '¿Cuál de estas dos provincias tiene MAYOR superficie?',
+          hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
+          correctAnswer: mayor.nombre,
+          options: this.shuffle([p.nombre, otra.nombre]),
+          image: `img/provincias/${p.id}.png`,
+          detail: `${mayor.nombre} (${mayor.superficie.toLocaleString('es-DO')} km²) es más grande que ${menor.nombre} (${menor.superficie.toLocaleString('es-DO')} km²)`
+        };
+      },
+      // Tipo 3: De estas 4 provincias, ¿cuál tiene mayor superficie?
+      (p) => {
+        const otras = this.getRandomOptions(p.nombre, RD_DATA.provincias.map(x => x.nombre), 3)
+          .map(nombre => RD_DATA.provincias.find(x => x.nombre === nombre));
+        const candidatos = this.shuffle([p, ...otras]);
+        const mayor = candidatos.reduce((max, c) => c.superficie > max.superficie ? c : max, candidatos[0]);
+
+        return {
+          question: '¿Cuál de estas provincias tiene MAYOR superficie?',
+          hint: 'Compara las 4 opciones',
+          correctAnswer: mayor.nombre,
+          options: candidatos.map(c => c.nombre),
+          detail: `${mayor.nombre} tiene ${mayor.superficie.toLocaleString('es-DO')} km², la mayor entre estas opciones`
+        };
+      },
+      // Tipo 4: ¿Cuál de estas dos provincias tiene MENOR superficie?
+      (p, idx, arr) => {
+        const otra = arr[(idx + 1) % arr.length];
+        const menor = p.superficie < otra.superficie ? p : otra;
+        const mayor = menor === p ? otra : p;
+        return {
+          question: '¿Cuál de estas dos provincias tiene MENOR superficie?',
+          hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
+          correctAnswer: menor.nombre,
+          options: this.shuffle([p.nombre, otra.nombre]),
+          image: `img/provincias/${p.id}.png`,
+          detail: `${menor.nombre} (${menor.superficie.toLocaleString('es-DO')} km²) es más pequeña que ${mayor.nombre} (${mayor.superficie.toLocaleString('es-DO')} km²)`
+        };
+      },
+      // Tipo 5: De estas 4 provincias, ¿cuál tiene menor superficie?
+      (p) => {
+        const otras = this.getRandomOptions(p.nombre, RD_DATA.provincias.map(x => x.nombre), 3)
+          .map(nombre => RD_DATA.provincias.find(x => x.nombre === nombre));
+        const candidatos = this.shuffle([p, ...otras]);
+        const menor = candidatos.reduce((min, c) => c.superficie < min.superficie ? c : min, candidatos[0]);
+
+        return {
+          question: '¿Cuál de estas provincias tiene MENOR superficie?',
+          hint: 'Compara las 4 opciones',
+          correctAnswer: menor.nombre,
+          options: candidatos.map(c => c.nombre),
+          detail: `${menor.nombre} tiene ${menor.superficie.toLocaleString('es-DO')} km², la menor entre estas opciones`
+        };
+      }
+    ];
+
     for (let i = 0; i < Math.min(count, provincias.length); i++) {
       const provincia = provincias[i];
-      const options = generateAreaOptions(provincia.superficie);
+      const typeIndex = i % questionTypes.length;
+      const template = questionTypes[typeIndex](provincia, i, provincias);
 
       questions.push({
         type: 'superficie',
-        question: `¿Cuál es la superficie de ${provincia.nombre}?`,
-        hint: `Región: ${provincia.region}`,
-        correctAnswer: `${provincia.superficie.toLocaleString('es-DO')} km²`,
-        options: options,
-        image: `img/provincias/${provincia.id}.png`,
-        detail: `${provincia.nombre} tiene ${provincia.superficie.toLocaleString('es-DO')} km²`
+        ...template
       });
     }
 
@@ -529,10 +813,11 @@ class QuestionGenerator {
    */
   generateEscudosQuestions(count = 10) {
     const questions = [];
-    
+
     // Todas las 32 provincias tienen escudo
     const provincias = this.shuffle([...RD_DATA.provincias]);
     const allNames = RD_DATA.provincias.map(p => p.nombre);
+    const allCapitales = RD_DATA.provincias.map(p => p.capital);
 
     // Función para determinar extensión del escudo
     const getEscudoPath = (id) => {
@@ -541,19 +826,70 @@ class QuestionGenerator {
       return `img/escudos/${id}.${ext}`;
     };
 
+    const questionTypes = [
+      // Tipo 1: ¿A qué provincia pertenece este escudo?
+      (p) => ({
+        question: '¿A qué provincia pertenece este escudo?',
+        hint: `Región: ${p.region}`,
+        correctAnswer: p.nombre,
+        options: this.shuffle([p.nombre, ...this.getRandomOptions(p.nombre, allNames, 3)]),
+        detail: `Escudo de ${p.nombre} (${p.region})`
+      }),
+      // Tipo 2: ¿Cuál es la capital de la provincia de este escudo?
+      (p) => ({
+        question: '¿Cuál es la capital de la provincia de este escudo?',
+        hint: `Región: ${p.region}`,
+        correctAnswer: p.capital,
+        options: this.shuffle([p.capital, ...this.getRandomOptions(p.capital, allCapitales, 3)]),
+        detail: `La capital de ${p.nombre} es ${p.capital}`
+      }),
+      // Tipo 3: Este escudo pertenece a una provincia de la región X. ¿Cuál es?
+      (p) => {
+        const mismaRegion = RD_DATA.provincias
+          .filter(x => x.region === p.region && x.nombre !== p.nombre)
+          .map(x => x.nombre);
+        const otrasRegiones = RD_DATA.provincias
+          .filter(x => x.region !== p.region)
+          .map(x => x.nombre);
+        const necesarios = 3 - mismaRegion.length;
+        const wrongOptions = necesarios > 0
+          ? [...this.shuffle(mismaRegion), ...this.getRandomOptions(p.nombre, otrasRegiones, necesarios)]
+          : this.shuffle(mismaRegion).slice(0, 3);
+
+        return {
+          question: `Este escudo pertenece a una provincia de la región ${p.region}. ¿Cuál es?`,
+          hint: `Capital: ${p.capital}`,
+          correctAnswer: p.nombre,
+          options: this.shuffle([p.nombre, ...wrongOptions]),
+          detail: `${p.nombre} está en la región ${p.region}`
+        };
+      },
+      // Tipo 4: De estas 4 provincias (una es la de este escudo), ¿cuál tiene MÁS habitantes?
+      (p) => {
+        const otras = this.getRandomOptions(p.nombre, RD_DATA.provincias.map(x => x.nombre), 3)
+          .map(nombre => RD_DATA.provincias.find(x => x.nombre === nombre));
+        const candidatos = this.shuffle([p, ...otras]);
+        const mayor = candidatos.reduce((max, c) => c.poblacion > max.poblacion ? c : max, candidatos[0]);
+
+        return {
+          question: 'Una de estas provincias tiene este escudo. ¿Cuál de las 4 tiene MÁS habitantes?',
+          hint: 'Compara las 4 opciones',
+          correctAnswer: mayor.nombre,
+          options: candidatos.map(c => c.nombre),
+          detail: `${mayor.nombre} tiene ${mayor.poblacion.toLocaleString('es-DO')} habitantes, la mayor entre estas opciones`
+        };
+      }
+    ];
+
     for (let i = 0; i < Math.min(count, provincias.length); i++) {
       const provincia = provincias[i];
-      const wrongOptions = this.getRandomOptions(provincia.nombre, allNames, 3);
-      const options = this.shuffle([provincia.nombre, ...wrongOptions]);
+      const typeIndex = i % questionTypes.length;
+      const template = questionTypes[typeIndex](provincia);
 
       questions.push({
         type: 'escudos',
-        question: '¿A qué provincia pertenece este escudo?',
-        hint: `Región: ${provincia.region}`,
-        correctAnswer: provincia.nombre,
-        options: options,
         image: getEscudoPath(provincia.id),
-        detail: `Escudo de ${provincia.nombre} (${provincia.region})`
+        ...template
       });
     }
 
@@ -755,9 +1091,13 @@ class QuestionGenerator {
       }
     ];
 
+    // Se mezcla el orden de los tipos para que, con lotes de 5 preguntas,
+    // todos los tipos (incluido el 6) tengan oportunidad de aparecer entre rondas
+    const typeOrder = this.shuffle(questionTypes.map((_, idx) => idx));
+
     for (let i = 0; i < Math.min(count, municipios.length); i++) {
       const municipio = municipios[i];
-      const typeIndex = i % questionTypes.length;
+      const typeIndex = typeOrder[i % typeOrder.length];
       const template = questionTypes[typeIndex](municipio, i, municipios);
 
       questions.push({
@@ -850,18 +1190,26 @@ class QuestionGenerator {
     }
 
     const [, day, month, year] = parts;
-    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 
+    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
                     'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-    
-    for (let i = 0; i < count; i++) {
+
+    const usedDates = new Set([realDate]);
+    let attempts = 0;
+
+    while (fakeDates.length < count && attempts < count * 10) {
+      attempts++;
       const fakeDay = Math.max(1, Math.min(28, parseInt(day) + (Math.random() > 0.5 ? 1 : -1) * (5 + Math.floor(Math.random() * 10))));
       const monthIdx = months.indexOf(month.toLowerCase());
       const fakeMonthIdx = (monthIdx + 2 + Math.floor(Math.random() * 4)) % 12;
       const fakeYear = parseInt(year) + (Math.random() > 0.5 ? 1 : -1) * (3 + Math.floor(Math.random() * 15));
-      
-      fakeDates.push(`${String(fakeDay).padStart(2, '0')} de ${months[fakeMonthIdx]} de ${Math.max(1845, fakeYear)}`);
+
+      const fakeDate = `${String(fakeDay).padStart(2, '0')} de ${months[fakeMonthIdx]} de ${Math.max(1845, fakeYear)}`;
+      if (!usedDates.has(fakeDate)) {
+        usedDates.add(fakeDate);
+        fakeDates.push(fakeDate);
+      }
     }
-    
+
     return fakeDates;
   }
 

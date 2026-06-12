@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rdquiz-v1';
+const CACHE_NAME = 'rdquiz-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const ASSETS = [
   './js/questions.js',
   './js/definitions.js',
   './js/storage.js',
+  './js/sounds.js',
   './js/app.js',
   './manifest.json',
   './img/mapa-rd.svg',
@@ -19,7 +20,7 @@ const ASSETS = [
   './icons/icon-512.png'
 ];
 
-const NETWORK_FIRST = ['app.js', 'storage.js', 'styles.css', 'questions.js'];
+const NETWORK_FIRST = ['app.js', 'storage.js', 'styles.css', 'questions.js', 'sounds.js'];
 
 self.addEventListener('install', event => {
   event.waitUntil(

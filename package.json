@@ -1,0 +1,9 @@
+{
+  "name": "rd-quiz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RD Quiz - PWA con 12 modos de juego sobre República Dominicana",
+  "scripts": {
+    "test": "node --test"
+  }
+}

@@ -47,7 +47,7 @@ class StorageManager {
       lives: {
         current: 5,
         max: 5,
-        lastRefillDate: null
+        lastRefillDate: new Date().toDateString()
       },
       // Inmunidad (30 min sin perder vidas, una vez al día)
       immunity: {
@@ -64,14 +64,10 @@ class StorageManager {
         timerEnabled: true,
         darkMode: false
       },
-      // Suscripción Premium
-      premium: {
-        isActive: false,
-        expiresAt: null,
-        purchaseDate: null
-      },
       // Monedas del juego (para comprar vidas)
       coins: 0,
+      // Códigos de promoción ya canjeados
+      redeemedCodes: [],
       // Fecha de primer uso
       firstUsed: new Date().toISOString()
     };
@@ -113,8 +109,8 @@ class StorageManager {
       dailyStreak: { ...defaults.dailyStreak, ...saved.dailyStreak },
       lives: { ...defaults.lives, ...(saved.lives || {}) },
       immunity: { ...defaults.immunity, ...(saved.immunity || {}) },
-      premium: { ...defaults.premium, ...(saved.premium || {}) },
       coins: saved.coins || defaults.coins,
+      redeemedCodes: saved.redeemedCodes || defaults.redeemedCodes,
       achievements: saved.achievements || [],
       settings: { ...defaults.settings, ...saved.settings },
       firstUsed: saved.firstUsed || defaults.firstUsed
@@ -369,64 +365,6 @@ class StorageManager {
     };
   }
 
-  // ===== SISTEMA PREMIUM =====
-
-  /**
-   * Verifica si el usuario tiene suscripción premium activa
-   */
-  isPremium() {
-    if (!this.data.premium.isActive) return false;
-    
-    // Verificar si no ha expirado
-    if (this.data.premium.expiresAt) {
-      const expiryDate = new Date(this.data.premium.expiresAt);
-      if (expiryDate < new Date()) {
-        // Expiró, desactivar
-        this.data.premium.isActive = false;
-        this.save();
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Activa la suscripción premium (simulado - en producción conectar con tienda)
-   * @param {number} months - Meses de suscripción
-   */
-  activatePremium(months = 1) {
-    const now = new Date();
-    const expiryDate = new Date(now);
-    expiryDate.setMonth(expiryDate.getMonth() + months);
-    
-    this.data.premium = {
-      isActive: true,
-      expiresAt: expiryDate.toISOString(),
-      purchaseDate: now.toISOString()
-    };
-    this.save();
-    return true;
-  }
-
-  /**
-   * Cancela/desactiva premium
-   */
-  cancelPremium() {
-    this.data.premium.isActive = false;
-    this.save();
-  }
-
-  /**
-   * Obtiene días restantes de premium
-   */
-  getPremiumDaysLeft() {
-    if (!this.isPremium()) return 0;
-    const expiry = new Date(this.data.premium.expiresAt);
-    const now = new Date();
-    const diffTime = expiry - now;
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  }
-
   // ===== SISTEMA DE MONEDAS =====
 
   /**
@@ -458,6 +396,39 @@ class StorageManager {
     return false;
   }
 
+  // ===== CÓDIGOS DE PROMOCIÓN =====
+
+  /**
+   * Verifica si un código de promoción ya fue canjeado en este dispositivo
+   */
+  isCodeRedeemed(code) {
+    return this.data.redeemedCodes.includes(code.toUpperCase());
+  }
+
+  /**
+   * Canjea un código de promoción por monedas
+   * @returns {{success: boolean, message: string, coins?: number}}
+   */
+  redeemPromoCode(code) {
+    const normalized = (code || '').trim().toUpperCase();
+    if (!normalized) {
+      return { success: false, message: 'Ingresa un código' };
+    }
+
+    const reward = PROMO_CODES[normalized];
+    if (!reward) {
+      return { success: false, message: 'Código no válido' };
+    }
+
+    if (this.isCodeRedeemed(normalized)) {
+      return { success: false, message: 'Ya canjeaste este código' };
+    }
+
+    this.data.redeemedCodes.push(normalized);
+    this.addCoins(reward);
+    return { success: true, message: `¡Código válido! Obtuviste ${reward} monedas`, coins: reward };
+  }
+
   // ===== TIENDA =====
 
   /**
@@ -481,27 +452,16 @@ class StorageManager {
   }
 
   /**
-   * Verifica si tiene vidas infinitas (premium activo)
-   */
-  hasInfiniteLives() {
-    return this.isPremium();
-  }
-
-  /**
-   * Override de hasLives para considerar premium
+   * Verifica si tiene vidas disponibles
    */
   hasLives() {
-    if (this.isPremium()) return true;
     return this.getLives() > 0;
   }
 
   /**
-   * Override de loseLife para considerar premium
+   * Resta una vida (a menos que tenga inmunidad activa)
    */
   loseLife() {
-    // Premium no pierde vidas
-    if (this.isPremium()) return this.data.lives.current;
-    
     // Si tiene inmunidad activa, no pierde vida
     if (this.isImmunityActive()) {
       return this.data.lives.current;

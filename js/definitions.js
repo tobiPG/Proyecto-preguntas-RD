@@ -60,9 +60,9 @@ const RD_DATA = {
     { nombre: 'Donald Reid Cabral', periodos: ['1963-1965'], partido: 'Triunvirato', dato: 'Gobierno de facto' },
     { nombre: 'Antonio Guzmán', periodos: ['1978-1982'], partido: 'PRD', dato: 'Primera transición democrática pacífica' },
     { nombre: 'Salvador Jorge Blanco', periodos: ['1982-1986'], partido: 'PRD', dato: 'Enfrentó crisis económica' },
-    { nombre: 'Leonel Fernández', periodos: ['1996-2000', '2004-2012'], partido: 'PLD', dato: 'Tres períodos presidenciales' },
+    { nombre: 'Leonel Fernández', periodos: ['1996-2000', '2004-2008', '2008-2012'], partido: 'PLD', dato: 'Tres períodos presidenciales' },
     { nombre: 'Hipólito Mejía', periodos: ['2000-2004'], partido: 'PRD', dato: 'Intentó reelección fallida' },
-    { nombre: 'Danilo Medina', periodos: ['2012-2020'], partido: 'PLD', dato: 'Dos períodos consecutivos' },
+    { nombre: 'Danilo Medina', periodos: ['2012-2016', '2016-2020'], partido: 'PLD', dato: 'Dos períodos consecutivos' },
     { nombre: 'Luis Abinader', periodos: ['2020-presente'], partido: 'PRM', dato: 'Presidente actual desde 2020' }
   ],
 
@@ -669,8 +669,16 @@ const RESULT_MESSAGES = {
   beginner: { min: 0, icon: '🌱', title: 'Principiante', message: 'La práctica hace al maestro' }
 };
 
+// Códigos de promoción canjeables por monedas
+const PROMO_CODES = {
+  'BIENVENIDO': 100,
+  'RDQUIZ2026': 150,
+  'BETATESTER': 200
+};
+
 // Exportar para uso global
 window.RD_DATA = RD_DATA;
 window.CATEGORIES = CATEGORIES;
 window.ACHIEVEMENTS = ACHIEVEMENTS;
 window.RESULT_MESSAGES = RESULT_MESSAGES;
+window.PROMO_CODES = PROMO_CODES;

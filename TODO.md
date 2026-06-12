@@ -6,18 +6,7 @@
 
 ## 🔴 Alta Prioridad
 
-### Integración de Pagos Reales (5%)
-- [ ] Configurar Google Play Billing Library
-- [ ] Configurar App Store In-App Purchases
-- [ ] Conectar compra de Premium con tiendas reales
-- [ ] Conectar compra de monedas con tiendas reales
-- [ ] Implementar verificación de recibos en servidor
-
-### Integración de Anuncios Reales (4%)
-- [ ] Crear cuenta AdMob
-- [ ] Configurar banner ads
-- [ ] Configurar rewarded video ads
-- [ ] Reemplazar anuncios simulados por AdMob SDK
+*(Sin pendientes - ver decisión de monetización en "Completado")*
 
 ---
 
@@ -30,14 +19,15 @@
 - [ ] Backup/restore de datos del usuario
 
 ### Audio y Sonidos (2%)
-- [ ] Sonido de respuesta correcta
-- [ ] Sonido de respuesta incorrecta
 - [ ] Música de fondo (opcional)
-- [ ] Sonido de logro desbloqueado
 - [ ] Control de volumen en settings
 
-### Escudos Municipales Faltantes (1%)
-- [ ] Buscar 13 escudos municipales restantes (145/158 actuales)
+### Escudo Municipal Faltante (0.1%)
+- [ ] Buscar escudo de Juan de Herrera (San Juan) - único municipio sin escudo (159/160 actuales)
+
+### Imágenes para Personajes Históricos (1%)
+- [ ] Buscar retratos/ilustraciones para los 16 personajes históricos
+- [ ] ⚠️ No usar imágenes de presidentes por derechos de autor
 
 ### Notificaciones Push (2%)
 - [ ] Configurar Firebase Cloud Messaging
@@ -66,8 +56,6 @@
 - [ ] Explicación de sistema de vidas
 
 ### Testing (1%)
-- [ ] Tests unitarios para storage.js
-- [ ] Tests unitarios para questions.js
 - [ ] Tests e2e con Playwright/Cypress
 
 ---
@@ -79,18 +67,32 @@
 - [x] Inmunidad de 5 minutos (1x día)
 - [x] Preguntas infinitas hasta game over
 - [x] Sistema de monedas (ganadas por puntuación)
-- [x] Tienda con Premium y monedas (USD)
-- [x] Anuncios simulados (recompensados)
+- [x] Decisión de monetización: sin pagos reales ni anuncios. Monedas se obtienen jugando + códigos de promoción canjeables en la tienda
 - [x] Modo oscuro
 - [x] PWA con offline support
 - [x] 32 provincias con escudos
-- [x] 158 municipios
-- [x] 145 escudos municipales
+- [x] 160 municipios
+- [x] 159 escudos municipales (solo falta Juan de Herrera)
 - [x] Persistencia localStorage
 - [x] Sistema de logros
 - [x] Estadísticas por categoría
 - [x] Botón "Continuar" acumulativo
+- [x] 3 tipos de pregunta en Provincias, Regiones, Superficie y Escudos Provinciales (antes solo 1 cada uno)
+- [x] Corregido bug de rotación de tipos en Personajes y Fundación de Municipios (todos los tipos pueden aparecer)
+- [x] Corregidas opciones de respuesta duplicadas en Personajes, Constitución y Fundación de Municipios
+- [x] 4 tipos de pregunta en Fechas Históricas (eventos por año, período histórico, días patrios)
+- [x] Habilitado Tipo 7 de Presidentes (sucesión cronológica real) - corregido bug "2 veces" de Danilo Medina y Leonel Fernández
+- [x] 5 tipos de pregunta en Regiones (provincia más poblada y con mayor superficie por región)
+- [x] 5 tipos de pregunta en Superficie (comparaciones de MENOR superficie agregadas)
+- [x] 4 tipos de pregunta en Leyes/Constitución (identificar frase del artículo)
+- [x] 7 tipos de pregunta en Personajes Históricos (comparación de quién nació primero)
+- [x] 4 tipos de pregunta en Provincias (comparación de población)
+- [x] 4 tipos de pregunta en Escudos Provinciales (comparación de población entre 4 provincias)
+- [x] Suite de tests unitarios (25 tests con node:test) para questions.js y storage.js - corregido bug de refill de vidas en el primer día
+- [x] Tienda simplificada: comprar vidas con monedas + canjear código de promoción (BIENVENIDO, RDQUIZ2026, BETATESTER)
+- [x] Sonidos de respuesta correcta/incorrecta/tiempo agotado y logro desbloqueado (Web Audio API, respeta el toggle de Sonido)
+- [x] Configuración verificada: toggles de Sonido, Vibración y Modo Oscuro funcionando con feedback inmediato al activarlos
 
 ---
 
-*Última actualización: Febrero 2026*
+*Última actualización: Junio 2026*
