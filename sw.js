@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rdquiz-v3';
+const CACHE_NAME = 'rdquiz-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -20,7 +20,7 @@ const ASSETS = [
   './icons/icon-512.png'
 ];
 
-const NETWORK_FIRST = ['app.js', 'storage.js', 'styles.css', 'questions.js', 'sounds.js'];
+const NETWORK_FIRST = ['app.js', 'storage.js', 'styles.css', 'questions.js', 'sounds.js', 'definitions.js', 'index.html'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -44,7 +44,7 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
-  const isNetworkFirst = NETWORK_FIRST.some(f => url.pathname.endsWith(f));
+  const isNetworkFirst = url.pathname.endsWith('/') || NETWORK_FIRST.some(f => url.pathname.endsWith(f));
 
   if (isNetworkFirst) {
     event.respondWith(
