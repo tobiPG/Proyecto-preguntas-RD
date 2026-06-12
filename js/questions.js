@@ -110,6 +110,15 @@ class QuestionGenerator {
     const provincias = this.shuffle([...RD_DATA.provincias]);
     const allCapitales = RD_DATA.provincias.map(p => p.capital);
 
+    // Función para determinar extensión del escudo
+    const getEscudoPath = (id) => {
+      const pngEscudos = ['azua', 'distrito-nacional'];
+      const ext = pngEscudos.includes(id) ? 'png' : 'jpg';
+      return `img/escudos/${id}.${ext}`;
+    };
+
+    const MAPA_GENERAL = 'img/mapa-rd.svg';
+
     const questionTypes = [
       // Tipo 1: ¿Cuál es la capital de esta provincia?
       (p) => ({
@@ -117,6 +126,7 @@ class QuestionGenerator {
         hint: p.dato,
         correctAnswer: p.capital,
         options: this.shuffle([p.capital, ...this.getRandomOptions(p.capital, allCapitales, 3)]),
+        image: getEscudoPath(p.id),
         detail: `La capital de ${p.nombre} es ${p.capital}`
       }),
       // Tipo 2: ¿A qué región pertenece esta provincia?
@@ -125,6 +135,7 @@ class QuestionGenerator {
         hint: `Capital: ${p.capital}`,
         correctAnswer: p.region,
         options: this.generateRegionOptions(p.region, 8),
+        image: getEscudoPath(p.id),
         detail: `${p.nombre} pertenece a la región ${p.region}`
       }),
       // Tipo 3: ¿Cuál de estas dos provincias tiene MÁS habitantes?
@@ -137,6 +148,7 @@ class QuestionGenerator {
           hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
           correctAnswer: mayor.nombre,
           options: this.shuffle([p.nombre, otra.nombre]),
+          image: MAPA_GENERAL,
           detail: `${mayor.nombre} (${mayor.poblacion.toLocaleString('es-DO')} hab.) tiene más población que ${menor.nombre} (${menor.poblacion.toLocaleString('es-DO')} hab.)`
         };
       },
@@ -150,6 +162,7 @@ class QuestionGenerator {
           hint: `Compara: ${p.nombre} vs ${otra.nombre}`,
           correctAnswer: mayor.nombre,
           options: this.shuffle([p.nombre, otra.nombre]),
+          image: MAPA_GENERAL,
           detail: `${mayor.nombre} (${mayor.superficie.toLocaleString('es-DO')} km²) tiene mayor superficie que ${menor.nombre} (${menor.superficie.toLocaleString('es-DO')} km²)`
         };
       }
