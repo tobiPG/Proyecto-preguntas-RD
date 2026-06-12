@@ -801,6 +801,16 @@ class RDQuizApp {
               }
             });
           });
+
+          // Las apps fijadas/instaladas (modo standalone) no se recargan al volver
+          // a abrirse, así que el chequeo inicial puede quedarse desactualizado.
+          // Volvemos a comprobar cuando la app regresa a primer plano.
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+              reg.update();
+            }
+          });
+          window.addEventListener('focus', () => reg.update());
         })
         .catch(err => console.log('SW error:', err));
 

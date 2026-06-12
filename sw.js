@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rdquiz-v6';
+const CACHE_NAME = 'rdquiz-v7';
 const ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const ASSETS = [
   './manifest.json',
   './img/mapa-rd.svg',
   './img/mapa-rd-nombres.jpg',
+  './img/splash-cover.png',
   './icons/icon-72.png',
   './icons/icon-96.png',
   './icons/icon-128.png',
