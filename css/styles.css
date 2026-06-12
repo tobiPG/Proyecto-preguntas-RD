@@ -947,6 +947,86 @@ img {
   padding: 0.75rem;
 }
 
+/* ===== Splash Screen (Portada) ===== */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  background: #002D62;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.splash-screen.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.splash-logo {
+  width: 140px;
+  height: 140px;
+  border-radius: 28px;
+  box-shadow: var(--shadow-lg);
+  animation: splashPop 0.5s ease;
+}
+
+.splash-loading {
+  color: var(--white);
+  opacity: 0.7;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+@keyframes splashPop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ===== Banner de Actualización ===== */
+.update-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  background: #002D62;
+  color: var(--white);
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 500;
+  animation: updateBannerIn var(--transition-normal);
+}
+
+.update-banner.hidden {
+  display: none;
+}
+
+.btn-update {
+  flex-shrink: 0;
+  background: #CE1126;
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1.1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+@keyframes updateBannerIn {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
 /* ===== Toast ===== */
 .toast {
   position: fixed;

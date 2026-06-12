@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rdquiz-v4';
+const CACHE_NAME = 'rdquiz-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -17,7 +17,8 @@ const ASSETS = [
   './icons/icon-192.png',
   './icons/icon-256.png',
   './icons/icon-384.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  './icons/icon-512.svg'
 ];
 
 const NETWORK_FIRST = ['app.js', 'storage.js', 'styles.css', 'questions.js', 'sounds.js', 'definitions.js', 'index.html'];
@@ -26,7 +27,6 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
@@ -38,6 +38,12 @@ self.addEventListener('activate', event => {
     })
   );
   self.clients.claim();
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', event => {

@@ -51,6 +51,7 @@ class RDQuizApp {
     this.loadMap();
     this.registerServiceWorker();
     this.startImmunityTimer();
+    this.hideSplashScreen();
   }
 
   /**
@@ -775,19 +776,24 @@ class RDQuizApp {
           console.log('SW registrado');
           reg.update();
 
+          // Ya hay una versión nueva esperando para activarse
+          if (reg.waiting) {
+            this.showUpdateBanner(reg.waiting);
+          }
+
           reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;
             if (!newWorker) return;
             newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'activated') {
-                window.location.reload();
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                this.showUpdateBanner(newWorker);
               }
             });
           });
         })
         .catch(err => console.log('SW error:', err));
 
-      // Cuando un nuevo Service Worker toma el control, recargar para usar los archivos nuevos
+      // Cuando el nuevo Service Worker toma el control, recargar para usar los archivos nuevos
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (refreshing) return;
@@ -795,6 +801,34 @@ class RDQuizApp {
         window.location.reload();
       });
     }
+  }
+
+  /**
+   * Muestra el banner de "Actualización disponible".
+   * Al pulsar el botón, le indica al Service Worker en espera que tome el control.
+   */
+  showUpdateBanner(worker) {
+    const banner = document.getElementById('update-banner');
+    const btn = document.getElementById('btn-update-app');
+    if (!banner || !btn) return;
+
+    banner.classList.remove('hidden');
+    btn.onclick = () => {
+      worker.postMessage({ type: 'SKIP_WAITING' });
+      banner.classList.add('hidden');
+    };
+  }
+
+  /**
+   * Oculta la portada (splash screen) tras cargar la app
+   */
+  hideSplashScreen() {
+    const splash = document.getElementById('splash-screen');
+    if (!splash) return;
+    setTimeout(() => {
+      splash.classList.add('hide');
+      setTimeout(() => splash.remove(), 400);
+    }, 500);
   }
 
   // ==================== SISTEMA DE VIDAS ====================

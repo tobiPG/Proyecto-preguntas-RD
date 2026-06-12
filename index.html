@@ -14,6 +14,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- Portada / Splash Screen -->
+  <div id="splash-screen" class="splash-screen">
+    <img src="icons/icon-512.svg" alt="RD Quiz" class="splash-logo">
+    <p class="splash-loading">Cargando...</p>
+  </div>
+
+  <!-- Banner de actualización disponible -->
+  <div id="update-banner" class="update-banner hidden">
+    <span>🔄 Hay una nueva versión disponible</span>
+    <button id="btn-update-app" class="btn-update">Actualizar</button>
+  </div>
+
   <div id="app">
     <!-- Pantalla de Inicio -->
     <section id="home-screen" class="screen active">
