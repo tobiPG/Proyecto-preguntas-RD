@@ -68,6 +68,11 @@ class StorageManager {
       coins: 0,
       // Códigos de promoción ya canjeados
       redeemedCodes: [],
+      // Historial de IDs usados recientemente (evita repeticiones seguidas)
+      questionHistory: {
+        provincias: [],
+        escudos: []
+      },
       // Fecha de primer uso
       firstUsed: new Date().toISOString()
     };
@@ -111,6 +116,10 @@ class StorageManager {
       immunity: { ...defaults.immunity, ...(saved.immunity || {}) },
       coins: saved.coins || defaults.coins,
       redeemedCodes: saved.redeemedCodes || defaults.redeemedCodes,
+      questionHistory: {
+        ...defaults.questionHistory,
+        ...(saved.questionHistory || {})
+      },
       achievements: saved.achievements || [],
       settings: { ...defaults.settings, ...saved.settings },
       firstUsed: saved.firstUsed || defaults.firstUsed
@@ -406,7 +415,7 @@ class StorageManager {
   }
 
   /**
-   * Canjea un código de promoción por monedas
+   * Canjea un código de promoción
    * @returns {{success: boolean, message: string, coins?: number}}
    */
   redeemPromoCode(code) {
@@ -415,18 +424,44 @@ class StorageManager {
       return { success: false, message: 'Ingresa un código' };
     }
 
-    const reward = PROMO_CODES[normalized];
-    if (!reward) {
+    const promo = PROMO_CODES[normalized];
+    if (!promo) {
       return { success: false, message: 'Código no válido' };
     }
 
-    if (this.isCodeRedeemed(normalized)) {
+    if (!promo.repeatable && this.isCodeRedeemed(normalized)) {
       return { success: false, message: 'Ya canjeaste este código' };
     }
 
-    this.data.redeemedCodes.push(normalized);
-    this.addCoins(reward);
-    return { success: true, message: `¡Código válido! Obtuviste ${reward} monedas`, coins: reward };
+    if (!promo.repeatable) {
+      this.data.redeemedCodes.push(normalized);
+    }
+
+    if (promo.type === 'lives') {
+      this.refillLives();
+      return { success: true, message: '¡Código válido! Tus vidas fueron restauradas al máximo' };
+    }
+
+    this.addCoins(promo.amount);
+    return { success: true, message: `¡Código válido! Obtuviste ${promo.amount} monedas`, coins: promo.amount };
+  }
+
+  // ===== HISTORIAL DE PREGUNTAS =====
+
+  /**
+   * Obtiene los IDs usados recientemente en una categoría (para evitar repeticiones)
+   */
+  getQuestionHistory(category) {
+    return this.data.questionHistory[category] || [];
+  }
+
+  /**
+   * Registra los IDs usados en una partida y conserva solo los últimos 30
+   */
+  addToQuestionHistory(category, ids) {
+    const previous = this.data.questionHistory[category] || [];
+    this.data.questionHistory[category] = [...previous, ...ids].slice(-30);
+    this.save();
   }
 
   // ===== TIENDA =====

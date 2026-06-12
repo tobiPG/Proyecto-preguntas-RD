@@ -53,6 +53,16 @@ class QuestionGenerator {
   }
 
   /**
+   * Ordena una lista de items priorizando los que NO aparecen en recentIds,
+   * para evitar repetir el mismo sujeto en partidas consecutivas
+   */
+  prioritizeFresh(items, recentIds = []) {
+    const fresh = this.shuffle(items.filter(item => !recentIds.includes(item.id)));
+    const stale = this.shuffle(items.filter(item => recentIds.includes(item.id)));
+    return [...fresh, ...stale];
+  }
+
+  /**
    * Genera opciones de regiones, siempre incluyendo la correcta
    */
   generateRegionOptions(correctRegion, totalOptions = 8) {
@@ -69,9 +79,9 @@ class QuestionGenerator {
   /**
    * Genera preguntas de provincias
    */
-  generateProvinciaQuestions(count = 10) {
+  generateProvinciaQuestions(count = 10, recentIds = []) {
     const questions = [];
-    const provincias = this.shuffle([...RD_DATA.provincias]);
+    const provincias = this.prioritizeFresh(RD_DATA.provincias, recentIds);
     const allNames = RD_DATA.provincias.map(p => p.nombre);
     const allCapitales = RD_DATA.provincias.map(p => p.capital);
 
@@ -811,11 +821,11 @@ class QuestionGenerator {
    * Genera preguntas de escudos provinciales
    * ¿A qué provincia pertenece este escudo?
    */
-  generateEscudosQuestions(count = 10) {
+  generateEscudosQuestions(count = 10, recentIds = []) {
     const questions = [];
 
     // Todas las 32 provincias tienen escudo
-    const provincias = this.shuffle([...RD_DATA.provincias]);
+    const provincias = this.prioritizeFresh(RD_DATA.provincias, recentIds);
     const allNames = RD_DATA.provincias.map(p => p.nombre);
     const allCapitales = RD_DATA.provincias.map(p => p.capital);
 
@@ -888,6 +898,7 @@ class QuestionGenerator {
 
       questions.push({
         type: 'escudos',
+        provinceId: provincia.id,
         image: getEscudoPath(provincia.id),
         ...template
       });
@@ -1243,12 +1254,12 @@ class QuestionGenerator {
   /**
    * Genera preguntas según la categoría
    */
-  generateQuestions(category, count = 10) {
+  generateQuestions(category, count = 10, recentIds = []) {
     this.reset();
 
     switch (category) {
       case 'provincias':
-        return this.generateProvinciaQuestions(count);
+        return this.generateProvinciaQuestions(count, recentIds);
       case 'personajes':
         return this.generatePersonajesQuestions(count);
       case 'presidentes':
@@ -1264,7 +1275,7 @@ class QuestionGenerator {
       case 'superficie':
         return this.generateSuperficieQuestions(count);
       case 'escudos':
-        return this.generateEscudosQuestions(count);
+        return this.generateEscudosQuestions(count, recentIds);
       case 'municipios':
         return this.generateMunicipiosQuestions(count);
       case 'fundaciones':

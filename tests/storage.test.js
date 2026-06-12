@@ -106,6 +106,24 @@ test('códigos de promoción: un código inválido no otorga monedas', () => {
   assert.strictEqual(storage.getCoins(), 0);
 });
 
+test('código OZIELRD1: restaura las vidas al máximo y se puede usar varias veces', () => {
+  const storage = freshStorage();
+  storage.loseLife();
+  storage.loseLife();
+  assert.strictEqual(storage.getLives(), 3);
+
+  const first = storage.redeemPromoCode('ozielrd1');
+  assert.strictEqual(first.success, true);
+  assert.strictEqual(storage.getLives(), 5);
+
+  storage.loseLife();
+  assert.strictEqual(storage.getLives(), 4);
+
+  const second = storage.redeemPromoCode('OZIELRD1');
+  assert.strictEqual(second.success, true);
+  assert.strictEqual(storage.getLives(), 5);
+});
+
 test('racha diaria: incrementa si jugó ayer, se reinicia si pasó más de un día', () => {
   const storage = freshStorage();
 
@@ -150,4 +168,19 @@ test('reset restaura el estado por defecto', () => {
 
   assert.strictEqual(storage.getCoins(), 0);
   assert.strictEqual(storage.getLives(), 5);
+});
+
+test('historial de preguntas: registra IDs y conserva solo los últimos 30', () => {
+  const storage = freshStorage();
+  assert.deepStrictEqual([...storage.getQuestionHistory('provincias')], []);
+
+  storage.addToQuestionHistory('provincias', ['a', 'b', 'c']);
+  assert.deepStrictEqual([...storage.getQuestionHistory('provincias')], ['a', 'b', 'c']);
+
+  for (let i = 0; i < 30; i++) {
+    storage.addToQuestionHistory('provincias', [`x${i}`]);
+  }
+  const history = storage.getQuestionHistory('provincias');
+  assert.strictEqual(history.length, 30);
+  assert.ok(!history.includes('a'), 'los IDs más antiguos deben descartarse');
 });

@@ -229,7 +229,16 @@ class RDQuizApp {
     }
 
     this.currentCategory = category;
-    this.questions = questionGenerator.generateQuestions(category, 5);
+
+    // Evitar repetir las mismas provincias/escudos en partidas consecutivas
+    const tracksHistory = category === 'provincias' || category === 'escudos';
+    const recentIds = tracksHistory ? storage.getQuestionHistory(category) : [];
+    this.questions = questionGenerator.generateQuestions(category, 5, recentIds);
+    if (tracksHistory) {
+      const usedIds = this.questions.map(q => q.provinceId).filter(Boolean);
+      storage.addToQuestionHistory(category, usedIds);
+    }
+
     this.currentQuestionIndex = 0;
     
     // Si keepScore es false, reiniciar todo

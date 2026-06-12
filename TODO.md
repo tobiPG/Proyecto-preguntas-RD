@@ -92,6 +92,8 @@
 - [x] Tienda simplificada: comprar vidas con monedas + canjear código de promoción (BIENVENIDO, RDQUIZ2026, BETATESTER)
 - [x] Sonidos de respuesta correcta/incorrecta/tiempo agotado y logro desbloqueado (Web Audio API, respeta el toggle de Sonido)
 - [x] Configuración verificada: toggles de Sonido, Vibración y Modo Oscuro funcionando con feedback inmediato al activarlos
+- [x] Código de promoción OZIELRD1: restaura las vidas al máximo, reutilizable sin límite
+- [x] Provincias y Escudos Provinciales: se evita repetir el mismo sujeto hasta que pasen 30 distintos (historial persistente)
 
 ---
 

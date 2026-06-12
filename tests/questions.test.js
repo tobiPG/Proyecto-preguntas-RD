@@ -137,6 +137,33 @@ test('Leyes: incluye preguntas de identificación de frase del artículo', () =>
   assert.ok(found, 'no se generó una pregunta de frase en 300 intentos');
 });
 
+test('Provincias: con recentIds, evita repetir sujetos recientes mientras haya opciones frescas', () => {
+  const gen = new QuestionGenerator();
+  const allIds = RD_DATA.provincias.map(p => p.id);
+  // Marcar todas menos 5 como "recientes"
+  const recentIds = allIds.slice(0, allIds.length - 5);
+
+  const qs = gen.generateQuestions('provincias', 5, recentIds);
+  assert.strictEqual(qs.length, 5);
+  for (const q of qs) {
+    assert.ok(!recentIds.includes(q.provinceId),
+      `la provincia ${q.provinceId} está en el historial reciente`);
+  }
+});
+
+test('Escudos: con recentIds, evita repetir sujetos recientes mientras haya opciones frescas', () => {
+  const gen = new QuestionGenerator();
+  const allIds = RD_DATA.provincias.map(p => p.id);
+  const recentIds = allIds.slice(0, allIds.length - 5);
+
+  const qs = gen.generateQuestions('escudos', 5, recentIds);
+  assert.strictEqual(qs.length, 5);
+  for (const q of qs) {
+    assert.ok(!recentIds.includes(q.provinceId),
+      `el escudo ${q.provinceId} está en el historial reciente`);
+  }
+});
+
 test('Regiones: incluye preguntas de provincia más poblada y mayor superficie', () => {
   const gen = new QuestionGenerator();
   let foundPoblada = false;

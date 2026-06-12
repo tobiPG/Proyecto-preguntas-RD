@@ -36,7 +36,7 @@ const RD_DATA = {
     { id: 'sanchez-ramirez', nombre: 'Sánchez Ramírez', capital: 'Cotuí', region: 'Cibao Sur', poblacion: 151392, superficie: 1185.8, dato: 'Importante minería de oro' },
     { id: 'santiago', nombre: 'Santiago', capital: 'Santiago de los Caballeros', region: 'Cibao Norte', poblacion: 963422, superficie: 2806.3, dato: 'Segunda ciudad más importante, Ciudad Corazón' },
     { id: 'santiago-rodriguez', nombre: 'Santiago Rodríguez', capital: 'San Ignacio de Sabaneta', region: 'Cibao Noroeste', poblacion: 57476, superficie: 1147.5, dato: 'Presa de Monción' },
-    { id: 'santo-domingo', nombre: 'Santo Domingo', capital: 'Santo Domingo Este', region: 'Ozama', poblacion: 2374370, superficie: 1302.2, dato: 'Provincia más poblada del país' },
+    { id: 'santo-domingo', nombre: 'Santo Domingo', capital: 'Santo Domingo de Guzmán', region: 'Ozama', poblacion: 2374370, superficie: 1302.2, dato: 'Provincia más poblada del país' },
     { id: 'valverde', nombre: 'Valverde', capital: 'Mao', region: 'Cibao Noroeste', poblacion: 163030, superficie: 823.0, dato: 'La línea noroeste, producción de arroz' }
   ],
 
@@ -669,11 +669,13 @@ const RESULT_MESSAGES = {
   beginner: { min: 0, icon: '🌱', title: 'Principiante', message: 'La práctica hace al maestro' }
 };
 
-// Códigos de promoción canjeables por monedas
+// Códigos de promoción canjeables
 const PROMO_CODES = {
-  'BIENVENIDO': 100,
-  'RDQUIZ2026': 150,
-  'BETATESTER': 200
+  'BIENVENIDO': { type: 'coins', amount: 100 },
+  'RDQUIZ2026': { type: 'coins', amount: 150 },
+  'BETATESTER': { type: 'coins', amount: 200 },
+  // Restaura las vidas al máximo, se puede usar repetidas veces
+  'OZIELRD1': { type: 'lives', repeatable: true }
 };
 
 // Exportar para uso global
