@@ -68,22 +68,51 @@ const RD_DATA = {
 
   // ===== PERSONAJES HISTÓRICOS =====
   personajes: [
-    { nombre: 'Juan Pablo Duarte', titulo: 'Padre de la Patria', nacimiento: 1813, muerte: 1876, dato: 'Fundador de La Trinitaria, ideólogo de la independencia' },
-    { nombre: 'Matías Ramón Mella', titulo: 'Padre de la Patria', nacimiento: 1816, muerte: 1864, dato: 'Disparó el trabucazo del 27 de febrero' },
-    { nombre: 'Francisco del Rosario Sánchez', titulo: 'Padre de la Patria', nacimiento: 1817, muerte: 1861, dato: 'Primer presidente de la Junta Gubernativa' },
-    { nombre: 'María Trinidad Sánchez', titulo: 'Heroína', nacimiento: 1794, muerte: 1845, dato: 'Mártir de la independencia, fusilada por conspirar contra el gobierno de Pedro Santana' },
-    { nombre: 'Concepción Bona', titulo: 'Heroína', nacimiento: 1824, muerte: 1901, dato: 'Cosió la primera bandera dominicana' },
-    { nombre: 'Salomé Ureña', titulo: 'Poetisa Nacional', nacimiento: 1850, muerte: 1897, dato: 'Fundadora del Instituto de Señoritas' },
-    { nombre: 'Gregorio Luperón', titulo: 'Héroe de la Restauración', nacimiento: 1839, muerte: 1897, dato: 'Líder militar de la Guerra de Restauración' },
-    { nombre: 'Las Hermanas Mirabal', titulo: 'Mariposas', nacimiento: 1924, muerte: 1960, dato: 'Símbolo de resistencia contra Trujillo' },
-    { nombre: 'Pedro Henríquez Ureña', titulo: 'Humanista', nacimiento: 1884, muerte: 1946, dato: 'Intelectual y crítico literario' },
-    { nombre: 'Juan Bosch', titulo: 'Escritor y Político', nacimiento: 1909, muerte: 2001, dato: 'Maestro del cuento latinoamericano' },
-    { nombre: 'Eugenio María de Hostos', titulo: 'El Gran Ciudadano de América', nacimiento: 1839, muerte: 1903, dato: 'Educador y reformador social' },
-    { nombre: 'Máximo Gómez', titulo: 'El Generalísimo', nacimiento: 1836, muerte: 1905, dato: 'Héroe de la independencia de Cuba' },
-    { nombre: 'Anacaona', titulo: 'Cacica Taína', nacimiento: 1474, muerte: 1503, dato: 'Reina taína de Jaragua' },
-    { nombre: 'Enriquillo', titulo: 'Cacique Rebelde', nacimiento: 1498, muerte: 1535, dato: 'Líder de la rebelión taína' },
-    { nombre: 'Manuela Diez', titulo: 'Madre de Duarte', nacimiento: 1786, muerte: 1858, dato: 'Madre del padre de la patria' },
-    { nombre: 'Rosa Duarte', titulo: 'Hermana de Duarte', nacimiento: 1820, muerte: 1888, dato: 'Preservó los escritos de Duarte' }
+    { nombre: 'Juan Pablo Duarte', titulo: 'Padre de la Patria', nacimiento: 1813, muerte: 1876, dato: 'Fundador de La Trinitaria, ideólogo de la independencia', lugar: 'Santo Domingo' },
+    { nombre: 'Matías Ramón Mella', titulo: 'Padre de la Patria', nacimiento: 1816, muerte: 1864, dato: 'Disparó el trabucazo del 27 de febrero', lugar: 'Santiago de los Caballeros' },
+    { nombre: 'Francisco del Rosario Sánchez', titulo: 'Padre de la Patria', nacimiento: 1817, muerte: 1861, dato: 'Fue el primer presidente de la Junta Gubernativa tras la proclamación de la República en 1844', lugar: 'Santo Domingo' },
+    { nombre: 'María Trinidad Sánchez', titulo: 'Heroína Nacional', nacimiento: 1794, muerte: 1845, dato: 'Mártir de la independencia, fusilada por conspirar contra el gobierno de Pedro Santana', lugar: 'Monte Cristi' },
+    { nombre: 'Concepción Bona', titulo: 'Heroína Nacional', nacimiento: 1824, muerte: 1901, dato: 'Cosió la primera bandera dominicana con sus vecinas la noche del 27 de febrero', lugar: 'Santo Domingo' },
+    { nombre: 'Salomé Ureña', titulo: 'Poetisa Nacional', nacimiento: 1850, muerte: 1897, dato: 'Fundadora del primer Instituto de Señoritas del país', lugar: 'Santo Domingo' },
+    { nombre: 'Gregorio Luperón', titulo: 'Héroe de la Restauración', nacimiento: 1839, muerte: 1897, dato: 'Líder militar de la Guerra de Restauración contra España', lugar: 'Puerto Plata' },
+    { nombre: 'Las Hermanas Mirabal', titulo: 'Las Mariposas', nacimiento: 1924, muerte: 1960, dato: 'Símbolo mundial de resistencia contra la dictadura de Trujillo', lugar: 'Salcedo' },
+    { nombre: 'Pedro Henríquez Ureña', titulo: 'Humanista de América', nacimiento: 1884, muerte: 1946, dato: 'Intelectual, crítico literario y reformador de la educación latinoamericana', lugar: 'Santo Domingo' },
+    { nombre: 'Juan Bosch', titulo: 'Escritor y Político', nacimiento: 1909, muerte: 2001, dato: 'Maestro del cuento latinoamericano y primer presidente democrático post-Trujillo', lugar: 'La Vega' },
+    { nombre: 'Eugenio María de Hostos', titulo: 'El Gran Ciudadano de América', nacimiento: 1839, muerte: 1903, dato: 'Educador, sociólogo y reformador social puertorriqueño adoptado por RD', lugar: 'Mayagüez, PR' },
+    { nombre: 'Máximo Gómez', titulo: 'El Generalísimo', nacimiento: 1836, muerte: 1905, dato: 'Héroe de la independencia de Cuba, nacido en Baní', lugar: 'Baní' },
+    { nombre: 'Anacaona', titulo: 'Cacica Taína', nacimiento: 1474, muerte: 1503, dato: 'Reina taína del cacicazgo de Jaragua, ejecutada por los españoles', lugar: 'Jaragua' },
+    { nombre: 'Enriquillo', titulo: 'Cacique Rebelde', nacimiento: 1498, muerte: 1535, dato: 'Lideró la primera rebelión exitosa de indígenas contra los colonizadores', lugar: 'Jaragua' },
+    { nombre: 'Manuela Diez', titulo: 'Madre de Duarte', nacimiento: 1786, muerte: 1858, dato: 'Formó el carácter patriota de Juan Pablo Duarte, padre de la patria', lugar: 'Santo Domingo' },
+    { nombre: 'Rosa Duarte', titulo: 'Hermana de Duarte', nacimiento: 1820, muerte: 1888, dato: 'Preservó los escritos y el legado de Juan Pablo Duarte para la historia', lugar: 'Santo Domingo' },
+    { nombre: 'Caonabo', titulo: 'Cacique Guerrero', nacimiento: 1450, muerte: 1496, dato: 'Atacó y destruyó el fuerte La Navidad siendo el primer cacique en resistir activamente a los españoles', lugar: 'Maguana' },
+    { nombre: 'Pedro Mir', titulo: 'Poeta Nacional', nacimiento: 1913, muerte: 2000, dato: 'Autor del Contracanto a Walt Whitman, obra cumbre de la poesía dominicana', lugar: 'San Pedro de Macorís' },
+    { nombre: 'Emilio Prud\'Homme', titulo: 'Autor del Himno Nacional', nacimiento: 1856, muerte: 1932, dato: 'Escribió la letra del Himno Nacional dominicano "Quisqueyanos valientes"', lugar: 'Puerto Plata' },
+    { nombre: 'José Reyes', titulo: 'Compositor del Himno Nacional', nacimiento: 1835, muerte: 1905, dato: 'Compuso la música del Himno Nacional dominicano', lugar: 'Santo Domingo' },
+    { nombre: 'Francisco Caamaño', titulo: 'Héroe Constitucionalista', nacimiento: 1932, muerte: 1973, dato: 'Lideró la Revolución Constitucionalista de Abril de 1965 para restaurar la democracia', lugar: 'Santo Domingo' },
+    { nombre: 'Américo Lugo', titulo: 'El Solitario de la Muralla', nacimiento: 1870, muerte: 1952, dato: 'Jurista, pensador y defensor de la soberanía nacional contra la ocupación estadounidense', lugar: 'Santo Domingo' },
+
+    // === CACIQUES TAÍNOS ADICIONALES ===
+    { nombre: 'Cotubanamá', titulo: 'Último Gran Cacique', nacimiento: 1475, muerte: 1503, dato: 'Último gran cacique taíno, defendió Higüey ferozmente hasta ser capturado y ejecutado en España', lugar: 'Higüey' },
+    { nombre: 'Bohechío', titulo: 'Cacique de Jaragua', nacimiento: 1445, muerte: 1502, dato: 'Gobernó el cacicazgo de Jaragua y fue hermano de la cacica Anacaona, señor del occidente de la isla', lugar: 'Jaragua' },
+    { nombre: 'Guarionex', titulo: 'Gran Cacique de la Vega', nacimiento: 1450, muerte: 1502, dato: 'Dominó el fértil valle de La Vega Real como el más poderoso de los cinco grandes caciques taínos', lugar: 'La Vega Real' },
+
+    // === ERA COLONIAL ===
+    { nombre: 'Fray Bartolomé de las Casas', titulo: 'Defensor de los Indígenas', nacimiento: 1474, muerte: 1566, dato: 'Vivió en La Española y dedicó su vida a denunciar los abusos contra los indígenas ante la Corona española', lugar: 'Sevilla, España' },
+    { nombre: 'Juan Sánchez Ramírez', titulo: 'Héroe de la Reconquista', nacimiento: 1762, muerte: 1811, dato: 'Lideró la Batalla de Palo Hincado (1808) y reconquistó la parte oriental de la isla de manos francesas', lugar: 'Cotuí' },
+
+    // === PRE-INDEPENDENCIA ===
+    { nombre: 'José Núñez de Cáceres', titulo: 'Padre de la Independencia Efímera', nacimiento: 1772, muerte: 1846, dato: 'Proclamó la Independencia Efímera el 1 de diciembre de 1821 separándose de España', lugar: 'Santo Domingo' },
+
+    // === REPÚBLICA Y RESTAURACIÓN ===
+    { nombre: 'Ulises Francisco Espaillat', titulo: 'El Presidente Honrado', nacimiento: 1823, muerte: 1878, dato: 'Gobernó solo 6 meses en 1876, es recordado como el presidente más honrado e ilustrado de la República', lugar: 'Moca' },
+    { nombre: 'Pedro Francisco Bonó', titulo: 'El Apóstol del Pueblo', nacimiento: 1828, muerte: 1906, dato: 'Fue el primer sociólogo dominicano y defensor incansable de los campesinos contra las élites del poder', lugar: 'Santiago de los Caballeros' },
+    { nombre: 'Gaspar Polanco', titulo: 'General de la Restauración', nacimiento: 1822, muerte: 1867, dato: 'Lideró operaciones militares clave en la Guerra de Restauración y ejerció como presidente provisional en 1865', lugar: 'Guayubín' },
+
+    // === SIGLO XX - POLÍTICA ===
+    { nombre: 'José Francisco Peña Gómez', titulo: 'El Tribuno del Pueblo', nacimiento: 1937, muerte: 1998, dato: 'Líder histórico del PRD, el político más popular del siglo XX dominicano, tres veces candidato presidencial', lugar: 'Mao' },
+    { nombre: 'Antonio Duvergé', titulo: 'Héroe de la Independencia', nacimiento: 1800, muerte: 1855, dato: 'General que ganó la Batalla de Las Carreras (1849) contra Haití, ejecutado traicioneramente por Pedro Santana', lugar: 'Santo Domingo' },
+    { nombre: 'Francisco Xavier Billini', titulo: 'El Padre de los Pobres', nacimiento: 1837, muerte: 1890, dato: 'Sacerdote y humanista que fundó el primer hospital de pobres y el orfanato de Santo Domingo', lugar: 'Santo Domingo' },
+    { nombre: 'Ramón Cáceres', titulo: 'El Matador de Lilís', nacimiento: 1866, muerte: 1911, dato: 'Participó en el ajusticiamiento del dictador Ulises Heureaux en 1899 y luego fue presidente hasta su propio asesinato', lugar: 'Moca' }
   ],
 
   // ===== FECHAS HISTÓRICAS =====
@@ -655,16 +684,39 @@ const CATEGORIES = {
 
 // Logros disponibles
 const ACHIEVEMENTS = [
-  { id: 'first_game', name: 'Primera Partida', icon: '🎮', condition: 'Completa tu primera partida', requirement: { gamesPlayed: 1 } },
-  { id: 'perfect_10', name: 'Perfecto', icon: '💯', condition: '10 respuestas correctas seguidas', requirement: { streak: 10 } },
-  { id: 'province_master', name: 'Geógrafo', icon: '🗺️', condition: 'Domina todas las provincias', requirement: { category: 'provincias', percent: 100 } },
-  { id: 'region_master', name: 'Cartógrafo', icon: '📍', condition: 'Domina todas las regiones', requirement: { category: 'regiones', percent: 100 } },
-  { id: 'historian', name: 'Historiador', icon: '📚', condition: 'Domina fechas históricas', requirement: { category: 'fechas', percent: 100 } },
-  { id: 'politico', name: 'Politólogo', icon: '🏛️', condition: 'Domina los presidentes', requirement: { category: 'presidentes', percent: 100 } },
-  { id: 'loyal', name: 'Patriota', icon: '🇩🇴', condition: 'Juega 7 días seguidos', requirement: { dailyStreak: 7 } },
-  { id: 'expert', name: 'Experto', icon: '🎓', condition: '100 respuestas correctas', requirement: { totalCorrect: 100 } },
-  { id: 'master', name: 'Maestro', icon: '👑', condition: '500 respuestas correctas', requirement: { totalCorrect: 500 } },
-  { id: 'lawyer', name: 'Jurista', icon: '⚖️', condition: 'Domina la constitución', requirement: { category: 'leyes', percent: 100 } }
+  // === PRIMEROS PASOS ===
+  { id: 'first_game',       name: 'Primera Partida',      icon: '🎮', condition: 'Completa tu primera partida',              requirement: { gamesPlayed: 1 } },
+  { id: 'ten_games',        name: 'Constante',             icon: '🎯', condition: 'Juega 10 partidas',                        requirement: { gamesPlayed: 10 } },
+  { id: 'fifty_games',      name: 'Veterano',              icon: '🏅', condition: 'Juega 50 partidas',                        requirement: { gamesPlayed: 50 } },
+
+  // === RACHAS DE RESPUESTAS ===
+  { id: 'perfect_10',       name: 'En Racha',              icon: '✨', condition: '10 respuestas correctas seguidas',          requirement: { streak: 10 } },
+  { id: 'streak_20',        name: 'En Llamas',             icon: '🔥', condition: '20 respuestas correctas seguidas',          requirement: { streak: 20 } },
+  { id: 'streak_30',        name: 'Imparable',             icon: '⚡', condition: '30 respuestas correctas seguidas',          requirement: { streak: 30 } },
+
+  // === CONOCIMIENTO ACUMULADO ===
+  { id: 'expert',           name: 'Estudioso',             icon: '📘', condition: '100 respuestas correctas',                 requirement: { totalCorrect: 100 } },
+  { id: 'master',           name: 'Maestro',               icon: '🎓', condition: '500 respuestas correctas',                 requirement: { totalCorrect: 500 } },
+  { id: 'correct_1000',     name: 'Sabio',                 icon: '🧠', condition: '1000 respuestas correctas',                requirement: { totalCorrect: 1000 } },
+
+  // === RACHA DIARIA ===
+  { id: 'loyal',            name: 'Patriota',              icon: '🇩🇴', condition: 'Juega 7 días seguidos',                   requirement: { dailyStreak: 7 } },
+  { id: 'daily_30',         name: 'Devoto',                icon: '📅', condition: 'Juega 30 días seguidos',                   requirement: { dailyStreak: 30 } },
+
+  // === DOMINIO POR CATEGORÍA ===
+  { id: 'province_master',  name: 'Geógrafo',              icon: '🗺️', condition: 'Domina las provincias',                   requirement: { category: 'provincias', percent: 100 } },
+  { id: 'region_master',    name: 'Cartógrafo',            icon: '📍', condition: 'Domina las regiones',                     requirement: { category: 'regiones', percent: 100 } },
+  { id: 'historian',        name: 'Cronista',              icon: '📚', condition: 'Domina las fechas históricas',             requirement: { category: 'fechas', percent: 100 } },
+  { id: 'politico',         name: 'Politólogo',            icon: '🏛️', condition: 'Domina los presidentes',                 requirement: { category: 'presidentes', percent: 100 } },
+  { id: 'lawyer',           name: 'Jurista',               icon: '⚖️', condition: 'Domina la constitución',                 requirement: { category: 'leyes', percent: 100 } },
+  { id: 'personajes_master',name: 'Biógrafo',              icon: '📖', condition: 'Domina los personajes históricos',         requirement: { category: 'personajes', percent: 100 } },
+  { id: 'municipios_master',name: 'Municipalista',         icon: '🏘️', condition: 'Domina todos los municipios',            requirement: { category: 'municipios', percent: 100 } },
+
+  // === ECONOMÍA ===
+  { id: 'coins_500',        name: 'Próspero',              icon: '💰', condition: 'Gana 500 monedas en total',               requirement: { totalCoinsEarned: 500 } },
+
+  // === COLECCIONISTA ===
+  { id: 'achievements_10',  name: 'Coleccionista',         icon: '🏆', condition: 'Desbloquea 10 insignias',                  requirement: { achievementsCount: 10 } }
 ];
 
 // Mensajes de resultados según puntuación

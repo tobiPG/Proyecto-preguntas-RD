@@ -30,6 +30,10 @@ class SoundManager {
     return storage.getSettings().soundEnabled;
   }
 
+  getVolume() {
+    return (storage.getSettings().volume ?? 80) / 100;
+  }
+
   /**
    * Reproduce un tono simple con envolvente de volumen.
    */
@@ -57,24 +61,27 @@ class SoundManager {
   /** Respuesta correcta: dos notas ascendentes */
   playCorrect() {
     if (!this.isEnabled()) return;
-    this.playTone(987.77, 0, 0.12, 'sine', 0.2);
-    this.playTone(1318.51, 0.1, 0.2, 'sine', 0.2);
+    const v = this.getVolume();
+    this.playTone(987.77, 0, 0.12, 'sine', 0.2 * v);
+    this.playTone(1318.51, 0.1, 0.2, 'sine', 0.2 * v);
   }
 
   /** Respuesta incorrecta o tiempo agotado: tono descendente */
   playWrong() {
     if (!this.isEnabled()) return;
-    this.playTone(220, 0, 0.15, 'square', 0.12);
-    this.playTone(165, 0.12, 0.25, 'square', 0.12);
+    const v = this.getVolume();
+    this.playTone(220, 0, 0.15, 'square', 0.12 * v);
+    this.playTone(165, 0.12, 0.25, 'square', 0.12 * v);
   }
 
   /** Logro desbloqueado: pequeño arpegio triunfal */
   playAchievement() {
     if (!this.isEnabled()) return;
-    this.playTone(523.25, 0, 0.12, 'triangle', 0.2);
-    this.playTone(659.25, 0.1, 0.12, 'triangle', 0.2);
-    this.playTone(783.99, 0.2, 0.12, 'triangle', 0.2);
-    this.playTone(1046.5, 0.3, 0.25, 'triangle', 0.2);
+    const v = this.getVolume();
+    this.playTone(523.25, 0, 0.12, 'triangle', 0.2 * v);
+    this.playTone(659.25, 0.1, 0.12, 'triangle', 0.2 * v);
+    this.playTone(783.99, 0.2, 0.12, 'triangle', 0.2 * v);
+    this.playTone(1046.5, 0.3, 0.25, 'triangle', 0.2 * v);
   }
 }
 

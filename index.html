@@ -281,33 +281,73 @@
         <h2>Mi Progreso</h2>
         <div></div>
       </header>
-      
+
       <div class="stats-content">
+
+        <!-- Fila 1: Estadísticas principales -->
         <div class="stats-overview">
-          <div class="overview-card">
+          <div class="overview-card overview-card--primary">
             <span class="overview-value" id="total-played">0</span>
-            <span class="overview-label">Partidas Jugadas</span>
+            <span class="overview-label">Partidas</span>
           </div>
           <div class="overview-card">
-            <span class="overview-value" id="total-correct">0</span>
-            <span class="overview-label">Respuestas Correctas</span>
+            <span class="overview-value" id="stat-accuracy">0%</span>
+            <span class="overview-label">Precisión</span>
           </div>
           <div class="overview-card">
             <span class="overview-value" id="best-streak">0</span>
             <span class="overview-label">Mejor Racha</span>
           </div>
         </div>
-        
-        <h3>Progreso por Categoría</h3>
-        <div class="category-stats" id="category-stats">
-          <!-- Se genera dinámicamente -->
+
+        <!-- Fila 2: Estadísticas secundarias -->
+        <div class="stats-secondary">
+          <div class="stat-pill">
+            <span class="stat-pill-icon">⭐</span>
+            <div class="stat-pill-body">
+              <span class="stat-pill-value" id="total-score">0</span>
+              <span class="stat-pill-label">Puntos totales</span>
+            </div>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-pill-icon">🔥</span>
+            <div class="stat-pill-body">
+              <span class="stat-pill-value" id="daily-streak">0</span>
+              <span class="stat-pill-label">Racha diaria</span>
+            </div>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-pill-icon">🪙</span>
+            <div class="stat-pill-body">
+              <span class="stat-pill-value" id="total-coins-earned">0</span>
+              <span class="stat-pill-label">Monedas ganadas</span>
+            </div>
+          </div>
         </div>
-        
-        <h3>Logros</h3>
-        <div class="achievements" id="achievements">
-          <!-- Se genera dinámicamente -->
+
+        <!-- Barra de precisión -->
+        <div class="stats-accuracy-wrap">
+          <div class="stats-accuracy-bar" id="accuracy-bar">
+            <div class="accuracy-segment accuracy-segment--correct" id="accuracy-correct-seg"></div>
+            <div class="accuracy-segment accuracy-segment--wrong"   id="accuracy-wrong-seg"></div>
+          </div>
+          <div class="stats-accuracy-labels">
+            <span class="accuracy-label accuracy-label--correct">✓ <strong id="total-correct">0</strong> correctas</span>
+            <span class="accuracy-label accuracy-label--wrong">✗ <strong id="total-wrong">0</strong> incorrectas</span>
+          </div>
         </div>
-        
+
+        <!-- Progreso por categoría -->
+        <h3 class="stats-section-title">Progreso por Categoría</h3>
+        <div class="category-stats" id="category-stats"></div>
+
+        <!-- Insignias -->
+        <h3 class="stats-section-title">
+          Insignias
+          <span class="achievements-counter" id="achievements-counter">0 / 19</span>
+        </h3>
+        <div class="achievements-grid" id="achievements"></div>
+
         <button id="btn-reset-stats" class="btn-danger">
           <span>🗑️</span> Reiniciar Progreso
         </button>
@@ -381,6 +421,13 @@
               <input type="checkbox" id="toggle-sound">
               <span class="toggle-slider"></span>
             </label>
+          </div>
+          <div class="setting-item setting-item--volume" id="volume-row">
+            <div class="setting-info">
+              <span class="setting-label">Volumen</span>
+              <span class="setting-desc" id="volume-label">80%</span>
+            </div>
+            <input type="range" id="slider-volume" min="0" max="100" step="5" value="80" class="volume-slider">
           </div>
           <div class="setting-item">
             <div class="setting-info">

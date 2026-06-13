@@ -753,6 +753,8 @@ img {
 }
 
 /* ===== Stats Screen ===== */
+
+/* -- Cabecera -- */
 .stats-header {
   display: flex;
   align-items: center;
@@ -760,148 +762,288 @@ img {
   padding: 0.5rem;
   margin-bottom: 1rem;
 }
-
 .stats-header h2 {
   color: var(--white);
   font-size: 1.25rem;
 }
 
+/* -- Contenedor principal -- */
 .stats-content {
   background: var(--white);
   border-radius: var(--radius-xl);
   padding: 1.5rem;
   flex: 1;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-.stats-content h3 {
+/* -- Títulos de sección -- */
+.stats-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-size: 1rem;
+  font-weight: 700;
   color: var(--gray-700);
-  margin: 1.5rem 0 1rem;
+  margin: 1.5rem 0 0.75rem;
 }
 
+/* -- Fila 1: 3 tarjetas principales -- */
 .stats-overview {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
-
 .overview-card {
   background: var(--gray-50);
   border-radius: var(--radius-md);
-  padding: 1rem 0.5rem;
+  padding: 0.9rem 0.4rem;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
+  border: 1.5px solid transparent;
 }
-
+.overview-card--primary {
+  background: linear-gradient(135deg, var(--blue-primary), var(--blue-light));
+  border-color: transparent;
+}
+.overview-card--primary .overview-value,
+.overview-card--primary .overview-label {
+  color: #fff;
+}
 .overview-value {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--blue-primary);
+  line-height: 1;
 }
-
 .overview-label {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 500;
   color: var(--gray-500);
   line-height: 1.2;
 }
 
+/* -- Fila 2: 3 píldoras secundarias -- */
+.stats-secondary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.5rem;
+}
+.stat-pill-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.stat-pill-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.stat-pill-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--gray-800);
+  line-height: 1;
+}
+.stat-pill-label {
+  font-size: 0.65rem;
+  color: var(--gray-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* -- Barra de precisión -- */
+.stats-accuracy-wrap {
+  margin-top: 1rem;
+}
+.stats-accuracy-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--gray-200);
+}
+.accuracy-segment {
+  height: 100%;
+  transition: width var(--transition-slow);
+}
+.accuracy-segment--correct {
+  background: var(--green-success);
+  border-radius: 5px 0 0 5px;
+}
+.accuracy-segment--wrong {
+  background: var(--red-light);
+  border-radius: 0 5px 5px 0;
+}
+.stats-accuracy-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.4rem;
+}
+.accuracy-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.accuracy-label--correct { color: var(--green-success); }
+.accuracy-label--wrong   { color: var(--red-light); }
+
+/* -- Progreso por categoría -- */
 .category-stats {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
-
 .category-stat-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem;
+  padding: 0.65rem 0.75rem;
   background: var(--gray-50);
   border-radius: var(--radius-md);
 }
-
 .category-stat-icon {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
+  width: 1.6rem;
+  text-align: center;
+  flex-shrink: 0;
 }
-
 .category-stat-info {
   flex: 1;
+  min-width: 0;
 }
-
 .category-stat-name {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--gray-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
 .category-stat-bar {
-  height: 6px;
+  height: 5px;
   background: var(--gray-200);
   border-radius: 3px;
   margin-top: 0.25rem;
   overflow: hidden;
 }
-
 .category-stat-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--blue-primary), var(--blue-light));
   border-radius: 3px;
   transition: width var(--transition-slow);
 }
-
+.category-stat-fill--good     { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+.category-stat-fill--mastered { background: linear-gradient(90deg, var(--green-success), #16a34a); }
 .category-stat-percent {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--blue-primary);
+  flex-shrink: 0;
+  width: 2.5rem;
+  text-align: right;
+}
+.category-stat-percent--mastered { color: var(--green-success); }
+
+/* -- Contador de insignias -- */
+.achievements-counter {
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--blue-primary);
+  color: #fff;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
 }
 
-/* ===== Achievements ===== */
-.achievements {
+/* ===== Insignias (achievements) ===== */
+.achievements-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
-.achievement {
-  background: var(--gray-50);
+/* -- Tarjeta base -- */
+.achievement-card {
   border-radius: var(--radius-md);
-  padding: 1rem 0.5rem;
+  padding: 0.75rem 0.4rem;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  transition: all var(--transition-fast);
+  gap: 0.2rem;
+  position: relative;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.achievement.unlocked {
-  background: linear-gradient(135deg, var(--gold), #FFC107);
-  box-shadow: var(--shadow-md);
+/* -- Bloqueada -- */
+.achievement-card--locked {
+  background: var(--gray-100);
+  border: 1.5px solid var(--gray-200);
+}
+.achievement-card--locked .achievement-card__icon {
+  filter: grayscale(1);
+  opacity: 0.35;
+}
+.achievement-card--locked .achievement-card__name {
+  color: var(--gray-400);
+}
+.achievement-card--locked .achievement-card__condition {
+  color: var(--gray-400);
 }
 
-.achievement-icon {
-  font-size: 2rem;
-  filter: grayscale(100%);
-  opacity: 0.5;
+/* -- Desbloqueada -- */
+.achievement-card--unlocked {
+  background: linear-gradient(145deg, #FFF8DC, var(--gold));
+  border: 1.5px solid #e6b800;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.35);
+}
+.achievement-card--unlocked:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.45);
 }
 
-.achievement.unlocked .achievement-icon {
-  filter: none;
-  opacity: 1;
+/* -- Elementos de la tarjeta -- */
+.achievement-card__icon {
+  font-size: 1.9rem;
+  line-height: 1;
 }
-
-.achievement-name {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--gray-500);
+.achievement-card__name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray-700);
   line-height: 1.2;
 }
-
-.achievement.unlocked .achievement-name {
-  color: var(--gray-800);
+.achievement-card__condition {
+  font-size: 0.62rem;
+  color: var(--gray-500);
+  line-height: 1.3;
+}
+.achievement-card__badge {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  background: var(--green-success);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ===== Modal ===== */
@@ -1421,6 +1563,19 @@ img {
   color: var(--gray-500);
 }
 
+/* Slider de volumen */
+.setting-item--volume {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.volume-slider {
+  width: 100%;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
 /* Toggle Switch */
 .toggle-switch {
   position: relative;
@@ -1601,6 +1756,28 @@ body.dark-mode .modal-content {
   background: #1E293B;
   color: #E2E8F0;
 }
+
+body.dark-mode .overview-card,
+body.dark-mode .stat-pill,
+body.dark-mode .category-stat-item {
+  background: #334155;
+}
+body.dark-mode .overview-value,
+body.dark-mode .stat-pill-value  { color: #93C5FD; }
+body.dark-mode .overview-label,
+body.dark-mode .stat-pill-label,
+body.dark-mode .category-stat-name { color: #94A3B8; }
+body.dark-mode .category-stat-bar { background: #475569; }
+body.dark-mode .stats-accuracy-bar { background: #475569; }
+body.dark-mode .stats-section-title { color: #CBD5E1; }
+
+body.dark-mode .achievement-card--locked {
+  background: #334155;
+  border-color: #475569;
+}
+body.dark-mode .achievement-card--locked .achievement-card__name { color: #64748B; }
+body.dark-mode .achievement-card--locked .achievement-card__condition { color: #64748B; }
+body.dark-mode .achievement-card--unlocked .achievement-card__name { color: #1E293B; }
 
 body.dark-mode .user-data-card,
 body.dark-mode .setting-item,

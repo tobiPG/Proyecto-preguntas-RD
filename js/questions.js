@@ -194,15 +194,27 @@ class QuestionGenerator {
     const allNames = RD_DATA.personajes.map(p => p.nombre);
     const allTitulos = [...new Set(RD_DATA.personajes.map(p => p.titulo))];
 
+    // Nombres que comparten título con cada personaje (para excluirlos de opciones incorrectas)
+    const nombresPorTitulo = {};
+    RD_DATA.personajes.forEach(x => {
+      if (!nombresPorTitulo[x.titulo]) nombresPorTitulo[x.titulo] = [];
+      nombresPorTitulo[x.titulo].push(x.nombre);
+    });
+
     const questionTypes = [
       // Tipo 1: ¿Quién fue conocido como...?
-      (p) => ({
-        question: `¿Quién fue conocido como "${p.titulo}"?`,
-        hint: `Vivió entre ${p.nacimiento} y ${p.muerte}`,
-        correctAnswer: p.nombre,
-        options: this.shuffle([p.nombre, ...this.getRandomOptions(p.nombre, allNames, 3)]),
-        detail: p.dato
-      }),
+      // Las opciones incorrectas excluyen otros personajes con el mismo título
+      (p) => {
+        const mismoTitulo = nombresPorTitulo[p.titulo] || [];
+        const safeNames = allNames.filter(n => !mismoTitulo.includes(n));
+        return {
+          question: `¿Quién fue conocido como "${p.titulo}"?`,
+          hint: `Vivió entre ${p.nacimiento} y ${p.muerte}`,
+          correctAnswer: p.nombre,
+          options: this.shuffle([p.nombre, ...this.getRandomOptions(p.nombre, safeNames, 3)]),
+          detail: p.dato
+        };
+      },
       // Tipo 2: ¿Qué título tuvo...?
       (p) => ({
         question: `¿Qué título o reconocimiento tuvo ${p.nombre}?`,
@@ -277,6 +289,54 @@ class QuestionGenerator {
           correctAnswer: primero.nombre,
           options: this.shuffle([p.nombre, otro.nombre]),
           detail: `${primero.nombre} (${primero.nacimiento}) nació antes que ${segundo.nombre} (${segundo.nacimiento})`
+        };
+      },
+      // Tipo 8: ¿En qué siglo nació...?
+      (p) => {
+        const sigloNum = Math.ceil(p.nacimiento / 100);
+        const romanos = { 14: 'XIV', 15: 'XV', 16: 'XVI', 17: 'XVII', 18: 'XVIII', 19: 'XIX', 20: 'XX', 21: 'XXI' };
+        const correct = `Siglo ${romanos[sigloNum] || sigloNum}`;
+        const wrongNums = [sigloNum - 1, sigloNum + 1, sigloNum + 2].filter(s => romanos[s] && s !== sigloNum);
+        const wrongs = wrongNums.slice(0, 3).map(s => `Siglo ${romanos[s]}`);
+        return {
+          question: `¿En qué siglo nació ${p.nombre}?`,
+          hint: `Nació en el año ${p.nacimiento}`,
+          correctAnswer: correct,
+          options: this.shuffle([correct, ...wrongs]),
+          detail: `${p.nombre} nació en ${p.nacimiento}, en el ${correct}`
+        };
+      },
+      // Tipo 9: ¿Cuál de estos dos vivió más años?
+      (p, idx, arr) => {
+        let otro = arr[(idx + 2) % arr.length];
+        let offset = 2;
+        const edadP = p.muerte - p.nacimiento;
+        while (Math.abs(edadP - (otro.muerte - otro.nacimiento)) < 3 && offset < arr.length) {
+          offset++;
+          otro = arr[(idx + offset) % arr.length];
+        }
+        const edadOtro = otro.muerte - otro.nacimiento;
+        // Si quedan exactamente iguales, desempatamos por quien nació antes (más contexto histórico)
+        const mayor = edadP !== edadOtro ? (edadP > edadOtro ? p : otro) : (p.nacimiento < otro.nacimiento ? p : otro);
+        const menor = mayor === p ? otro : p;
+        const detailExtra = edadP === edadOtro ? ' (misma edad, se tomó el de mayor antigüedad histórica)' : '';
+        return {
+          question: '¿Cuál de estos dos personajes vivió más años?',
+          hint: `Compara: ${p.nombre} vs ${otro.nombre}`,
+          correctAnswer: mayor.nombre,
+          options: this.shuffle([p.nombre, otro.nombre]),
+          detail: `${mayor.nombre} vivió ${mayor.muerte - mayor.nacimiento} años; ${menor.nombre} vivió ${menor.muerte - menor.nacimiento} años${detailExtra}`
+        };
+      },
+      // Tipo 10: ¿Dónde nació...?
+      (p) => {
+        const allLugares = [...new Set(RD_DATA.personajes.map(x => x.lugar).filter(Boolean))];
+        return {
+          question: `¿Dónde nació ${p.nombre}?`,
+          hint: p.titulo,
+          correctAnswer: p.lugar,
+          options: this.shuffle([p.lugar, ...this.getRandomOptions(p.lugar, allLugares, 3)]),
+          detail: `${p.nombre} nació en ${p.lugar}`
         };
       }
     ];

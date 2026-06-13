@@ -166,6 +166,7 @@ class RDQuizApp {
     document.getElementById('toggle-dark-mode').addEventListener('change', (e) => this.toggleDarkMode(e.target.checked));
     document.getElementById('toggle-sound').addEventListener('change', (e) => this.toggleSetting('soundEnabled', e.target.checked));
     document.getElementById('toggle-vibration').addEventListener('change', (e) => this.toggleSetting('vibrationEnabled', e.target.checked));
+    document.getElementById('slider-volume').addEventListener('input', (e) => this.setVolume(Number(e.target.value)));
     
     // Enlaces legales
     document.getElementById('btn-privacy').addEventListener('click', () => this.showPolicy('privacy'));
@@ -631,36 +632,60 @@ class RDQuizApp {
    */
   showStats() {
     const stats = storage.getStats();
+    const totalAnswered = stats.totalCorrect + stats.totalWrong;
 
-    // Estadísticas generales
+    // --- Fila 1: stats principales ---
     document.getElementById('total-played').textContent = stats.gamesPlayed;
-    document.getElementById('total-correct').textContent = stats.totalCorrect;
+    document.getElementById('stat-accuracy').textContent = `${stats.accuracy}%`;
     document.getElementById('best-streak').textContent = stats.bestStreak;
 
-    // Progreso por categoría
+    // --- Fila 2: stats secundarias ---
+    document.getElementById('total-score').textContent = stats.totalScore.toLocaleString();
+    document.getElementById('daily-streak').textContent = stats.dailyStreak;
+    document.getElementById('total-coins-earned').textContent = (stats.totalCoinsEarned || 0).toLocaleString();
+
+    // --- Barra de precisión ---
+    document.getElementById('total-correct').textContent = stats.totalCorrect.toLocaleString();
+    document.getElementById('total-wrong').textContent = stats.totalWrong.toLocaleString();
+    if (totalAnswered > 0) {
+      const pct = Math.round((stats.totalCorrect / totalAnswered) * 100);
+      document.getElementById('accuracy-correct-seg').style.width = `${pct}%`;
+      document.getElementById('accuracy-wrong-seg').style.width = `${100 - pct}%`;
+    } else {
+      document.getElementById('accuracy-correct-seg').style.width = '0%';
+      document.getElementById('accuracy-wrong-seg').style.width = '0%';
+    }
+
+    // --- Progreso por categoría ---
     const categoryStatsContainer = document.getElementById('category-stats');
     categoryStatsContainer.innerHTML = Object.entries(CATEGORIES).map(([key, cat]) => {
       const progress = storage.getCategoryProgress(key);
+      const colorClass = progress >= 100 ? 'category-stat-fill--mastered' : progress >= 50 ? 'category-stat-fill--good' : '';
       return `
         <div class="category-stat-item">
           <span class="category-stat-icon">${cat.icon}</span>
           <div class="category-stat-info">
             <span class="category-stat-name">${cat.name}</span>
             <div class="category-stat-bar">
-              <div class="category-stat-fill" style="width: ${progress}%"></div>
+              <div class="category-stat-fill ${colorClass}" style="width:${progress}%"></div>
             </div>
           </div>
-          <span class="category-stat-percent">${progress}%</span>
+          <span class="category-stat-percent ${progress >= 100 ? 'category-stat-percent--mastered' : ''}">${progress}%</span>
         </div>
       `;
     }).join('');
 
-    // Logros
-    const achievementsContainer = document.getElementById('achievements');
-    achievementsContainer.innerHTML = storage.getAchievements().map(a => `
-      <div class="achievement ${a.unlocked ? 'unlocked' : ''}">
-        <span class="achievement-icon">${a.icon}</span>
-        <span class="achievement-name">${a.name}</span>
+    // --- Insignias ---
+    const allAchievements = storage.getAchievements();
+    const unlockedCount = allAchievements.filter(a => a.unlocked).length;
+    document.getElementById('achievements-counter').textContent = `${unlockedCount} / ${allAchievements.length}`;
+
+    document.getElementById('achievements').innerHTML = allAchievements.map(a => `
+      <div class="achievement-card ${a.unlocked ? 'achievement-card--unlocked' : 'achievement-card--locked'}">
+        <span class="achievement-card__icon">${a.icon}</span>
+        <span class="achievement-card__name">${a.name}</span>
+        <span class="achievement-card__condition">${a.condition}</span>
+        ${a.unlocked ? '<span class="achievement-card__badge">✓</span>' : ''}
       </div>
     `).join('');
 
@@ -1079,6 +1104,13 @@ class RDQuizApp {
     document.getElementById('toggle-dark-mode').checked = settings.darkMode || false;
     document.getElementById('toggle-sound').checked = settings.soundEnabled;
     document.getElementById('toggle-vibration').checked = settings.vibrationEnabled;
+
+    // Slider de volumen
+    const vol = settings.volume ?? 80;
+    document.getElementById('slider-volume').value = vol;
+    document.getElementById('volume-label').textContent = `${vol}%`;
+    document.getElementById('volume-row').style.opacity = settings.soundEnabled ? '1' : '0.4';
+    document.getElementById('slider-volume').disabled = !settings.soundEnabled;
     
     this.showScreen('settings');
   }
@@ -1122,6 +1154,20 @@ class RDQuizApp {
     if (setting === 'vibrationEnabled' && value && navigator.vibrate) {
       navigator.vibrate(50);
     }
+
+    // Habilitar/deshabilitar slider de volumen según estado del sonido
+    if (setting === 'soundEnabled') {
+      const row = document.getElementById('volume-row');
+      const slider = document.getElementById('slider-volume');
+      if (row) row.style.opacity = value ? '1' : '0.4';
+      if (slider) slider.disabled = !value;
+    }
+  }
+
+  setVolume(value) {
+    storage.updateSettings({ volume: value });
+    document.getElementById('volume-label').textContent = `${value}%`;
+    sounds.playCorrect();
   }
 
   /**

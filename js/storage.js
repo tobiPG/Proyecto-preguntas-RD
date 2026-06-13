@@ -21,7 +21,8 @@ class StorageManager {
         totalWrong: 0,
         bestStreak: 0,
         currentStreak: 0,
-        totalScore: 0
+        totalScore: 0,
+        totalCoinsEarned: 0
       },
       // Progreso por categoría
       categoryProgress: {
@@ -61,6 +62,7 @@ class StorageManager {
       // Configuración
       settings: {
         soundEnabled: true,
+        volume: 80,
         vibrationEnabled: true,
         timerEnabled: true,
         darkMode: false
@@ -246,9 +248,13 @@ class StorageManager {
       }
       if (req.category && req.percent) {
         const progress = this.getCategoryProgress(req.category);
-        if (progress >= req.percent) {
-          unlocked = true;
-        }
+        if (progress >= req.percent) unlocked = true;
+      }
+      if (req.totalCoinsEarned && (this.data.stats.totalCoinsEarned || 0) >= req.totalCoinsEarned) {
+        unlocked = true;
+      }
+      if (req.achievementsCount && this.data.achievements.length >= req.achievementsCount) {
+        unlocked = true;
       }
 
       if (unlocked) {
@@ -389,6 +395,7 @@ class StorageManager {
    */
   addCoins(amount) {
     this.data.coins = (this.data.coins || 0) + amount;
+    this.data.stats.totalCoinsEarned = (this.data.stats.totalCoinsEarned || 0) + amount;
     this.save();
     return this.data.coins;
   }
